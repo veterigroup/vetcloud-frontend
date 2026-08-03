@@ -107,6 +107,7 @@
       <div class="panel">
         <div class="panel-head">
           <div><h2>Ficha clínica</h2><div class="sub">Alergias y condiciones preexistentes</div></div>
+          <button class="btn-ghost" onclick="abrirModalFichaClinica()">Editar</button>
         </div>
         <div id="fichaClinica"><div class="empty-state">Cargando…</div></div>
       </div>
@@ -177,6 +178,24 @@
       <div class="modal-actions">
         <button type="button" class="btn-ghost" onclick="cerrarModalVacuna()">Cancelar</button>
         <button type="submit" class="btn-primary" id="btnGuardarVacuna">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: ficha clínica -->
+<div class="overlay" id="overlayFicha">
+  <div class="modal">
+    <h2>Ficha clínica</h2>
+    <div class="sub">Alergias, condiciones preexistentes y observaciones generales.</div>
+    <div class="error-box" id="errorFicha"></div>
+    <form id="formFicha">
+      <div class="field"><label>Alergias</label><input type="text" id="fc_alergias" placeholder="ej. Penicilina, ninguna conocida…"></div>
+      <div class="field"><label>Condiciones preexistentes</label><input type="text" id="fc_condiciones" placeholder="ej. Displasia de cadera, diabetes…"></div>
+      <div class="field"><label>Observaciones generales</label><input type="text" id="fc_observaciones"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalFichaClinica()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarFicha">Guardar</button>
       </div>
     </form>
   </div>
@@ -253,12 +272,15 @@
     }
   }
 
+  let fichaClinicaActual = null;
+
   async function cargarFichaClinica() {
     const el = document.getElementById('fichaClinica');
     try {
       const h = await apiFetch(`/mascotas/${mascotaId}/historia-clinica`);
+      fichaClinicaActual = h;
       if (!h) {
-        el.innerHTML = '<div class="empty-state">Sin ficha clínica registrada todavía.</div>';
+        el.innerHTML = '<div class="empty-state">Sin ficha clínica registrada todavía — dale a "Editar" para crearla.</div>';
         return;
       }
       el.innerHTML = `
@@ -269,6 +291,41 @@
       el.innerHTML = `<div class="empty-state">${err.message}</div>`;
     }
   }
+
+  function abrirModalFichaClinica() {
+    document.getElementById('fc_alergias').value = fichaClinicaActual?.alergias || '';
+    document.getElementById('fc_condiciones').value = fichaClinicaActual?.condiciones_preexistentes || '';
+    document.getElementById('fc_observaciones').value = fichaClinicaActual?.observaciones_generales || '';
+    document.getElementById('errorFicha').classList.remove('show');
+    document.getElementById('overlayFicha').classList.add('open');
+  }
+  function cerrarModalFichaClinica() { document.getElementById('overlayFicha').classList.remove('open'); }
+  document.getElementById('overlayFicha').addEventListener('click', (e) => { if (e.target.id === 'overlayFicha') cerrarModalFichaClinica(); });
+
+  document.getElementById('formFicha').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorFicha');
+    const btn = document.getElementById('btnGuardarFicha');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      await apiFetch(`/mascotas/${mascotaId}/historia-clinica`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          alergias: document.getElementById('fc_alergias').value.trim() || null,
+          condiciones_preexistentes: document.getElementById('fc_condiciones').value.trim() || null,
+          observaciones_generales: document.getElementById('fc_observaciones').value.trim() || null,
+        }),
+      });
+      cerrarModalFichaClinica();
+      cargarFichaClinica();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  });
 
   cargarFicha();
   cargarHistorial();
