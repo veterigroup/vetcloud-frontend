@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Ingresar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F4EE; --surface:#FFFFFF; --surface-soft:#EEF1E9;
+    --ink:#17231C; --ink-soft:#5B6961; --ink-faint:#8B968E; --line:#DDE1D6;
+    --primary:#1E4D40; --primary-ink:#0E2A22; --primary-tint:#E1EDE6;
+    --gold:#C98A2B; --gold-tint:#F6E9D2; --red:#AF3B3B; --red-tint:#F5E2E0;
+    --radius:14px; --shadow:0 1px 2px rgba(23,35,28,0.04), 0 8px 24px rgba(23,35,28,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
+    display:grid;place-items:center;-webkit-font-smoothing:antialiased;}
+  h1{font-family:'Fraunces',serif;font-weight:500;margin:0;color:var(--primary-ink);}
+
+  .card{width:100%;max-width:380px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:36px 32px;margin:20px;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+  .brand-mark{width:38px;height:38px;border-radius:10px;background:var(--gold);display:flex;align-items:center;
+    justify-content:center;color:var(--primary-ink);font-family:'Fraunces',serif;font-weight:600;font-size:19px;}
+  .brand-name{font-family:'Fraunces',serif;font-size:20px;}
+
+  h1.title{font-size:22px;margin-bottom:4px;}
+  .subtitle{font-size:13.5px;color:var(--ink-faint);margin-bottom:26px;}
+
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;font-family:inherit;
+    font-size:14px;color:var(--ink);background:var(--surface);outline:none;transition:border-color .15s;}
+  input:focus{border-color:var(--primary);}
+  .field{margin-bottom:16px;}
+
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:42px;}
+  .toggle-pass{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--ink-faint);
+    border-radius:7px;}
+  .toggle-pass:hover{background:var(--surface-soft);color:var(--ink-soft);}
+  .toggle-pass svg{width:18px;height:18px;}
+
+  button.submit{width:100%;padding:12px;border:none;border-radius:9px;background:var(--primary);color:#fff;
+    font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .15s;}
+  button.submit:hover{opacity:.92;}
+  button.submit:disabled{opacity:.6;cursor:not-allowed;}
+
+  .error-box{background:var(--red-tint);color:var(--red);font-size:13px;padding:10px 12px;border-radius:9px;
+    margin-bottom:16px;display:none;}
+  .error-box.show{display:block;}
+
+  .foot{margin-top:22px;text-align:center;font-size:12px;color:var(--ink-faint);}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div class="brand-name">VetCloud</div>
+    </div>
+
+    <h1 class="title">Ingresar</h1>
+    <div class="subtitle">Panel clínico de tu veterinaria</div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" required autocomplete="username" placeholder="tu@clinica.com">
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <div class="password-wrap">
+          <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+          <button type="button" class="toggle-pass" id="togglePass" aria-label="Mostrar contraseña" tabindex="-1">
+            <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="submit" id="submitBtn">Ingresar</button>
+    </form>
+
+    <div class="foot">VetCloud · Sistema veterinario multi-clínica</div>
+  </div>
+
+<script src="./shared/api.js"></script>
+<script>
+  // Si ya hay sesión activa, va directo al dashboard
+  if (getToken() && getUsuario()) window.location.href = './dashboard.html';
+
+  const form = document.getElementById('loginForm');
+  const errorBox = document.getElementById('errorBox');
+  const submitBtn = document.getElementById('submitBtn');
+
+  const passInput = document.getElementById('password');
+  const toggleBtn = document.getElementById('togglePass');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const eyeOffPath = '<path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A9.8 9.8 0 0 1 12 5c6.5 0 10 7 10 7a15.6 15.6 0 0 1-3.2 4.1M6.2 6.2A15.7 15.7 0 0 0 2 12s3.5 7 10 7c1.4 0 2.6-.2 3.7-.6"/>';
+  const eyeOnPath = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+
+  toggleBtn.addEventListener('click', () => {
+    const showing = passInput.type === 'text';
+    passInput.type = showing ? 'password' : 'text';
+    eyeIcon.innerHTML = showing ? eyeOnPath : eyeOffPath;
+    toggleBtn.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove('show');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Ingresando…';
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error?.message || 'No se pudo iniciar sesión');
+
+      setSession(body.token, body.usuario);
+      window.location.href = './dashboard.html';
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Ingresar';
+    }
+  });
+</script>
+</body>
+</html>

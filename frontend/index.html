@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud</title>
+<script src="./shared/api.js"></script>
+</head>
+<body>
+<script>
+  // Punto de entrada del sitio: si ya hay sesión, va al dashboard; si no, al login.
+  window.location.href = (getToken() && getUsuario()) ? './dashboard.html' : './login.html';
+</script>
+<noscript>
+  <p>VetCloud requiere JavaScript. <a href="./login.html">Ir al login</a></p>
+</noscript>
+</body>
+</html>

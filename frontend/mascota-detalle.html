@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Ficha de mascota</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<link rel="stylesheet" href="./shared/panel.css">
+<style>
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-faint);margin-bottom:10px;}
+  .back-link:hover{color:var(--ink);}
+
+  .pet-header{display:flex;gap:18px;align-items:center;}
+  .pet-avatar{width:64px;height:64px;border-radius:16px;background:var(--primary-tint);display:flex;
+    align-items:center;justify-content:center;font-size:30px;flex-shrink:0;}
+  .pet-meta{font-size:13px;color:var(--ink-faint);margin-top:3px;}
+  .pet-tags{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .pet-tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--surface-soft);color:var(--ink-soft);}
+
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-top:18px;}
+  .info-item .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+  .info-item .v{font-size:14px;font-weight:500;margin-top:3px;}
+
+  .grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:16px;}
+  @media (max-width:980px){.grid-2{grid-template-columns:1fr;}}
+
+  .type-badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;text-transform:capitalize;
+    background:var(--surface-soft);color:var(--ink-soft);}
+  .clinical-box{background:var(--surface-soft);border-radius:10px;padding:14px 16px;margin-top:14px;}
+  .clinical-box .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+  .clinical-box .v{font-size:13px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div><div class="brand-name">VetCloud</div><div class="brand-sub" id="clinicName">Cargando…</div></div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item" href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item active" href="./mascotas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item" href="./usuarios.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting"><div class="greeting-eyebrow">Mascota</div><h1>Ficha del paciente</h1></div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div><div class="name" id="userName">—</div><div class="role" id="userRole">—</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <a href="./mascotas.html" class="back-link">← Volver a mascotas</a>
+
+    <div class="panel" id="panelMascota">
+      <div class="empty-state">Cargando ficha…</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Historial completo</h2><div class="sub">Línea de tiempo unificada: consultas, tratamientos, vacunas, facturas…</div></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ghost" onclick="abrirModalVacuna()">+ Vacuna</button>
+            <button class="btn-primary" onclick="abrirModalTratamiento()">+ Tratamiento</button>
+          </div>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="empty-state">Cargando historial…</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Ficha clínica</h2><div class="sub">Alergias y condiciones preexistentes</div></div>
+        </div>
+        <div id="fichaClinica"><div class="empty-state">Cargando…</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: aplicar tratamiento -->
+<div class="overlay" id="overlayTratamiento">
+  <div class="modal">
+    <h2>Aplicar tratamiento</h2>
+    <div class="sub">Queda registrado en el historial de la mascota.</div>
+    <div class="error-box" id="errorTratamiento"></div>
+    <form id="formTratamiento">
+      <div class="field">
+        <label>Tratamiento</label>
+        <select id="t_tratamiento_id" required><option value="">Cargando…</option></select>
+        <input type="text" id="t_tratamiento_nuevo" placeholder="Nombre del tratamiento" style="display:none;margin-top:8px;">
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Dosis</label><input type="text" id="t_dosis" placeholder="ej. 5mg"></div>
+        <div class="field"><label>Vía de administración</label><input type="text" id="t_via" placeholder="ej. oral, IM"></div>
+      </div>
+      <div class="field">
+        <label>Producto usado del inventario (opcional)</label>
+        <select id="t_producto_id"><option value="">Ninguno — no descuenta stock</option></select>
+      </div>
+      <div class="field" id="t_cantidad_wrap" style="display:none;">
+        <label>Cantidad usada</label><input type="number" step="0.01" id="t_cantidad_producto" value="1">
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Costo ($)</label><input type="number" step="0.01" id="t_costo"></div>
+        <div class="field"><label>Empleado responsable</label><input type="text" id="t_empleado_display" disabled></div>
+      </div>
+      <div class="field"><label>Observaciones</label><input type="text" id="t_observaciones"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalTratamiento()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarTratamiento">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: aplicar vacuna -->
+<div class="overlay" id="overlayVacuna">
+  <div class="modal">
+    <h2>Aplicar vacuna</h2>
+    <div class="sub">Queda registrado en el historial de la mascota.</div>
+    <div class="error-box" id="errorVacuna"></div>
+    <form id="formVacuna">
+      <div class="field">
+        <label>Vacuna</label>
+        <select id="v_vacuna_id" required><option value="">Cargando…</option></select>
+        <input type="text" id="v_vacuna_nueva" placeholder="Nombre de la vacuna" style="display:none;margin-top:8px;">
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Fecha de aplicación</label><input type="date" id="v_fecha" required></div>
+        <div class="field"><label>Próxima dosis (opcional)</label><input type="date" id="v_proxima"></div>
+      </div>
+      <div class="field"><label>Lote</label><input type="text" id="v_lote"></div>
+      <div class="field">
+        <label>Producto usado del inventario (opcional)</label>
+        <select id="v_producto_id"><option value="">Ninguno — no descuenta stock</option></select>
+      </div>
+      <div class="field" id="v_cantidad_wrap" style="display:none;">
+        <label>Cantidad usada</label><input type="number" step="0.01" id="v_cantidad_producto" value="1">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalVacuna()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarVacuna">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+  applyRoleNav(usuario.rol);
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  const mascotaId = new URLSearchParams(window.location.search).get('id');
+  if (!mascotaId) window.location.href = './mascotas.html';
+
+  const iconos = { Canino:'🐕', Felino:'🐈', Ave:'🐦', Roedor:'🐹', Reptil:'🦎', Equino:'🐴', Exótico:'🦜' };
+  const iconosEvento = {
+    consulta: '🩺', tratamiento: '💉', vacuna: '💊', cirugia: '🔬',
+    proforma: '📋', factura: '🧾', examen: '🧪', nota: '📝',
+  };
+
+  async function cargarFicha() {
+    const panel = document.getElementById('panelMascota');
+    try {
+      const m = await apiFetch(`/mascotas/${mascotaId}`);
+      const edad = m.fecha_nacimiento
+        ? Math.floor((Date.now() - new Date(m.fecha_nacimiento)) / (365.25 * 24 * 3600 * 1000)) + ' años'
+        : (m.edad_aproximada || '—');
+
+      panel.innerHTML = `
+        <div class="pet-header">
+          <div class="pet-avatar">🐾</div>
+          <div>
+            <h2 style="font-size:22px;">${m.nombre}</h2>
+            <div class="pet-meta">${m.sexo ? m.sexo.charAt(0).toUpperCase() + m.sexo.slice(1) : 'Sexo no registrado'}</div>
+            <div class="pet-tags">
+              ${m.microchip ? `<span class="pet-tag">Chip: ${m.microchip}</span>` : ''}
+              ${m.esterilizado ? '<span class="pet-tag">Esterilizado</span>' : ''}
+              <span class="pet-tag estado-${m.estado}">${m.estado.charAt(0).toUpperCase() + m.estado.slice(1)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="info-item"><div class="k">Edad</div><div class="v">${edad}</div></div>
+          <div class="info-item"><div class="k">Peso actual</div><div class="v">${m.peso_actual_kg ? m.peso_actual_kg + ' kg' : '—'}</div></div>
+          <div class="info-item"><div class="k">Color</div><div class="v">${m.color || '—'}</div></div>
+        </div>`;
+    } catch (err) {
+      panel.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  async function cargarHistorial() {
+    const el = document.getElementById('timeline');
+    try {
+      const eventos = await apiFetch(`/mascotas/${mascotaId}/historial`);
+      if (!eventos.length) {
+        el.innerHTML = '<div class="empty-state">Todavía no hay eventos registrados para esta mascota.</div>';
+        return;
+      }
+      el.innerHTML = eventos.map(ev => `
+        <div class="timeline-item">
+          <div class="timeline-dot ${ev.tipo_evento}">${iconosEvento[ev.tipo_evento] || '•'}</div>
+          <div class="timeline-content">
+            <div class="t1">${ev.titulo} <span class="type-badge">${ev.tipo_evento}</span></div>
+            ${ev.descripcion ? `<div class="t2">${ev.descripcion}</div>` : ''}
+            <div class="t3">${new Date(ev.fecha).toLocaleString('es-EC', { dateStyle:'medium', timeStyle:'short' })}
+              ${ev.empleado_nombres ? ' · ' + ev.empleado_nombres + ' ' + (ev.empleado_apellidos || '') : ''}</div>
+          </div>
+        </div>`).join('');
+    } catch (err) {
+      el.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  async function cargarFichaClinica() {
+    const el = document.getElementById('fichaClinica');
+    try {
+      const h = await apiFetch(`/mascotas/${mascotaId}/historia-clinica`);
+      if (!h) {
+        el.innerHTML = '<div class="empty-state">Sin ficha clínica registrada todavía.</div>';
+        return;
+      }
+      el.innerHTML = `
+        <div class="clinical-box"><div class="k">Alergias</div><div class="v">${h.alergias || 'Ninguna registrada'}</div></div>
+        <div class="clinical-box"><div class="k">Condiciones preexistentes</div><div class="v">${h.condiciones_preexistentes || 'Ninguna registrada'}</div></div>
+        <div class="clinical-box"><div class="k">Observaciones generales</div><div class="v">${h.observaciones_generales || '—'}</div></div>`;
+    } catch (err) {
+      el.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  cargarFicha();
+  cargarHistorial();
+  cargarFichaClinica();
+
+  // ---------- Empleado actual (necesario para registrar quién aplica) ----------
+  let miEmpleadoId = null;
+  apiFetch('/auth/me').then(me => {
+    miEmpleadoId = me.empleado_id;
+    if (!miEmpleadoId) {
+      document.getElementById('errorTratamiento').textContent =
+        'Tu usuario no tiene ficha de personal — pide a un administrador que la agregue en Usuarios y roles.';
+    }
+  });
+
+  // ---------- Catálogos para los modales ----------
+  let tratamientosCache = [];
+  let vacunasCache = [];
+  let productosCache = [];
+
+  async function cargarCatalogosClinicos() {
+    const [tratamientos, vacunas, productos] = await Promise.all([
+      apiFetch('/tratamientos?per_page=100'),
+      apiFetch('/vacunas?per_page=100'),
+      apiFetch('/productos?per_page=200'),
+    ]);
+    tratamientosCache = tratamientos.data;
+    vacunasCache = vacunas.data;
+    productosCache = productos.data;
+
+    document.getElementById('t_tratamiento_id').innerHTML =
+      '<option value="">Selecciona…</option>' +
+      tratamientosCache.map(t => `<option value="${t.id}">${t.nombre}${t.precio ? ' — $' + t.precio : ''}</option>`).join('') +
+      '<option value="__nuevo__">+ Otro tratamiento (escribir)</option>';
+
+    document.getElementById('v_vacuna_id').innerHTML =
+      '<option value="">Selecciona…</option>' +
+      vacunasCache.map(v => `<option value="${v.id}">${v.nombre}</option>`).join('') +
+      '<option value="__nuevo__">+ Otra vacuna (escribir)</option>';
+
+    const opcionesProducto = '<option value="">Ninguno — no descuenta stock</option>' +
+      productosCache.map(p => `<option value="${p.id}">${p.nombre} (stock: ${p.stock_actual})</option>`).join('');
+    document.getElementById('t_producto_id').innerHTML = opcionesProducto;
+    document.getElementById('v_producto_id').innerHTML = opcionesProducto;
+  }
+  cargarCatalogosClinicos();
+
+  document.getElementById('t_tratamiento_id').addEventListener('change', (e) => {
+    document.getElementById('t_tratamiento_nuevo').style.display = e.target.value === '__nuevo__' ? 'block' : 'none';
+  });
+  document.getElementById('v_vacuna_id').addEventListener('change', (e) => {
+    document.getElementById('v_vacuna_nueva').style.display = e.target.value === '__nuevo__' ? 'block' : 'none';
+  });
+  document.getElementById('t_producto_id').addEventListener('change', (e) => {
+    document.getElementById('t_cantidad_wrap').style.display = e.target.value ? 'block' : 'none';
+  });
+  document.getElementById('v_producto_id').addEventListener('change', (e) => {
+    document.getElementById('v_cantidad_wrap').style.display = e.target.value ? 'block' : 'none';
+  });
+
+  // ---------- Modal: tratamiento ----------
+  function abrirModalTratamiento() {
+    document.getElementById('formTratamiento').reset();
+    document.getElementById('t_tratamiento_nuevo').style.display = 'none';
+    document.getElementById('t_cantidad_wrap').style.display = 'none';
+    document.getElementById('errorTratamiento').classList.remove('show');
+    document.getElementById('overlayTratamiento').classList.add('open');
+  }
+  function cerrarModalTratamiento() { document.getElementById('overlayTratamiento').classList.remove('open'); }
+  document.getElementById('overlayTratamiento').addEventListener('click', (e) => { if (e.target.id === 'overlayTratamiento') cerrarModalTratamiento(); });
+
+  document.getElementById('formTratamiento').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorTratamiento');
+    const btn = document.getElementById('btnGuardarTratamiento');
+    errorBox.classList.remove('show');
+
+    if (!miEmpleadoId) {
+      errorBox.textContent = 'Tu usuario no tiene ficha de personal — no puedes registrar tratamientos.';
+      errorBox.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      let tratamientoId = document.getElementById('t_tratamiento_id').value;
+      if (!tratamientoId) throw new Error('Selecciona o escribe un tratamiento.');
+
+      if (tratamientoId === '__nuevo__') {
+        const nombre = document.getElementById('t_tratamiento_nuevo').value.trim();
+        if (!nombre) throw new Error('Escribe el nombre del tratamiento.');
+        const costo = document.getElementById('t_costo').value || 0;
+        const creado = await apiFetch('/tratamientos', { method: 'POST', body: JSON.stringify({ nombre, precio: costo }) });
+        tratamientoId = creado.id;
+      }
+
+      const productoId = document.getElementById('t_producto_id').value || null;
+
+      await apiFetch(`/mascotas/${mascotaId}/aplicar-tratamiento`, {
+        method: 'POST',
+        body: JSON.stringify({
+          tratamiento_id: Number(tratamientoId),
+          empleado_id: miEmpleadoId,
+          dosis: document.getElementById('t_dosis').value.trim() || null,
+          via_administracion: document.getElementById('t_via').value.trim() || null,
+          costo: document.getElementById('t_costo').value || null,
+          observaciones: document.getElementById('t_observaciones').value.trim() || null,
+          producto_id: productoId ? Number(productoId) : null,
+          cantidad_producto: productoId ? Number(document.getElementById('t_cantidad_producto').value || 1) : null,
+        }),
+      });
+
+      cerrarModalTratamiento();
+      cargarHistorial();
+      cargarCatalogosClinicos(); // refresca stock mostrado
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  });
+
+  // ---------- Modal: vacuna ----------
+  function abrirModalVacuna() {
+    document.getElementById('formVacuna').reset();
+    document.getElementById('v_vacuna_nueva').style.display = 'none';
+    document.getElementById('v_cantidad_wrap').style.display = 'none';
+    document.getElementById('v_fecha').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('errorVacuna').classList.remove('show');
+    document.getElementById('overlayVacuna').classList.add('open');
+  }
+  function cerrarModalVacuna() { document.getElementById('overlayVacuna').classList.remove('open'); }
+  document.getElementById('overlayVacuna').addEventListener('click', (e) => { if (e.target.id === 'overlayVacuna') cerrarModalVacuna(); });
+
+  document.getElementById('formVacuna').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorVacuna');
+    const btn = document.getElementById('btnGuardarVacuna');
+    errorBox.classList.remove('show');
+
+    if (!miEmpleadoId) {
+      errorBox.textContent = 'Tu usuario no tiene ficha de personal — no puedes registrar vacunas.';
+      errorBox.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      let vacunaId = document.getElementById('v_vacuna_id').value;
+      if (!vacunaId) throw new Error('Selecciona o escribe una vacuna.');
+
+      if (vacunaId === '__nuevo__') {
+        const nombre = document.getElementById('v_vacuna_nueva').value.trim();
+        if (!nombre) throw new Error('Escribe el nombre de la vacuna.');
+        const creada = await apiFetch('/vacunas', { method: 'POST', body: JSON.stringify({ nombre }) });
+        vacunaId = creada.id;
+      }
+
+      const productoId = document.getElementById('v_producto_id').value || null;
+
+      await apiFetch(`/mascotas/${mascotaId}/aplicar-vacuna`, {
+        method: 'POST',
+        body: JSON.stringify({
+          vacuna_id: Number(vacunaId),
+          empleado_id: miEmpleadoId,
+          fecha_aplicacion: document.getElementById('v_fecha').value,
+          fecha_proxima_dosis: document.getElementById('v_proxima').value || null,
+          lote: document.getElementById('v_lote').value.trim() || null,
+          producto_id: productoId ? Number(productoId) : null,
+          cantidad_producto: productoId ? Number(document.getElementById('v_cantidad_producto').value || 1) : null,
+        }),
+      });
+
+      cerrarModalVacuna();
+      cargarHistorial();
+      cargarCatalogosClinicos();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  });
+</script>
+</body>
+</html>

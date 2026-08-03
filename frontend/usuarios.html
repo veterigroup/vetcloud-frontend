@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Usuarios y roles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<style>
+  :root{
+    --bg:#F3F4EE; --surface:#FFFFFF; --surface-soft:#EEF1E9;
+    --ink:#17231C; --ink-soft:#5B6961; --ink-faint:#8B968E; --line:#DDE1D6;
+    --primary:#1E4D40; --primary-ink:#0E2A22; --primary-tint:#E1EDE6;
+    --gold:#C98A2B; --gold-tint:#F6E9D2; --red:#AF3B3B; --red-tint:#F5E2E0;
+    --radius:14px; --shadow:0 1px 2px rgba(23,35,28,0.04), 0 8px 24px rgba(23,35,28,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;color:var(--primary-ink);}
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---------- LAYOUT (idéntico al dashboard) ---------- */
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh;}
+  .sidebar{background:var(--primary);color:#EAF2ED;padding:24px 16px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--primary-ink);font-family:'Fraunces',serif;font-weight:600;font-size:17px;flex-shrink:0;}
+  .brand-name{font-family:'Fraunces',serif;font-size:18px;letter-spacing:.2px;}
+  .brand-sub{font-size:11px;color:#B9CFC3;margin-top:1px;}
+  .nav-group{display:flex;flex-direction:column;gap:2px;}
+  .nav-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8FB0A1;padding:6px 12px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:14px;color:#D7E7DE;transition:background .15s;}
+  .nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:.85;}
+  .nav-item:hover{background:rgba(255,255,255,.06);}
+  .nav-item.active{background:rgba(255,255,255,.12);color:#fff;font-weight:500;}
+  .sidebar-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;font-size:12px;color:#9FBCAE;}
+  .main{padding:22px 30px 60px;max-width:1160px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap;}
+  .greeting-eyebrow{font-size:12px;color:var(--ink-faint);letter-spacing:.03em;margin-bottom:2px;}
+  .greeting h1{font-size:26px;}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
+  .user-chip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);padding:6px 12px 6px 6px;border-radius:30px;}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--gold-tint);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+  .user-chip .name{font-size:13px;font-weight:500;}
+  .user-chip .role{font-size:11px;color:var(--ink-faint);}
+  .logout-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);transition:.15s;}
+  .logout-btn:hover{background:var(--red-tint);color:var(--red);border-color:transparent;}
+  .menu-toggle{display:none;}
+
+  .panel{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .panel-head h2{font-size:16px;}
+  .panel-head .sub{font-size:12px;color:var(--ink-faint);margin-top:2px;font-family:'Inter',sans-serif;}
+
+  .btn-primary{background:var(--primary);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .btn-primary:hover{opacity:.92;}
+  .btn-ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:500;}
+  .btn-ghost:hover{background:var(--surface-soft);}
+  .btn-danger{color:var(--red);border-color:transparent;background:var(--red-tint);}
+
+  /* Tabla */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);
+    padding:0 12px 10px;font-weight:600;border-bottom:1px solid var(--line);}
+  tbody td{padding:13px 12px;border-bottom:1px solid var(--surface-soft);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  .cell-user{display:flex;align-items:center;gap:10px;}
+  .cell-user .avatar{width:32px;height:32px;font-size:11px;background:var(--primary-tint);color:var(--primary);}
+  .cell-user .name{font-weight:500;}
+  .cell-user .email{font-size:12px;color:var(--ink-faint);}
+
+  .role-pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:capitalize;}
+  .role-admin{background:var(--gold-tint);color:var(--gold);}
+  .role-doctor,.role-auxiliar{background:var(--primary-tint);color:var(--primary);}
+  .role-secretaria,.role-contador{background:var(--surface-soft);color:var(--ink-soft);}
+
+  .estado-dot{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;}
+  .estado-dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ink-faint);}
+  .estado-activo::before{background:var(--primary);}
+  .estado-inactivo::before,.estado-bloqueado::before{background:var(--red);}
+
+  .row-actions{display:flex;gap:6px;justify-content:flex-end;}
+  .icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);}
+  .icon-btn:hover{background:var(--surface-soft);}
+  .icon-btn svg{width:15px;height:15px;}
+
+  .empty-state{font-size:13px;color:var(--ink-faint);padding:40px 4px;text-align:center;}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(14,42,34,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:var(--radius);padding:26px 28px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;}
+  .modal h2{font-size:18px;margin-bottom:4px;}
+  .modal .sub{font-size:12.5px;color:var(--ink-faint);margin-bottom:20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  .field input, .field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+    font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--primary);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;}
+  .field-hint{font-size:11.5px;color:var(--ink-faint);margin-top:4px;}
+  .error-box{background:var(--red-tint);color:var(--red);font-size:12.5px;padding:9px 11px;border-radius:8px;margin-bottom:14px;display:none;}
+  .error-box.show{display:block;}
+
+  @media (max-width:768px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:fixed;left:0;top:0;width:230px;transform:translateX(-100%);transition:transform .2s ease;z-index:40;}
+    .sidebar.open{transform:translateX(0);box-shadow:20px 0 40px rgba(0,0,0,.15);}
+    .menu-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:9px;background:var(--surface);border:1px solid var(--line);}
+    .main{padding:16px 16px 50px;}
+    table{font-size:12.5px;}
+    thead th:nth-child(3), tbody td:nth-child(3){display:none;} /* oculta cédula/teléfono en móvil */
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div>
+        <div class="brand-name">VetCloud</div>
+        <div class="brand-sub" id="clinicName">Cargando…</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item" href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item" href="./mascotas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item active" href="./usuarios.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting">
+          <div class="greeting-eyebrow">Sistema</div>
+          <h1>Usuarios y roles</h1>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div>
+            <div class="name" id="userName">—</div>
+            <div class="role" id="userRole">—</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Personal de la clínica</h2>
+          <div class="sub">Cuentas de acceso al sistema y su rol asignado</div>
+        </div>
+        <button class="btn-primary" onclick="abrirModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo usuario
+        </button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Cédula / teléfono</th>
+            <th>Estado</th>
+            <th>Último acceso</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tablaUsuarios">
+          <tr><td colspan="6" class="empty-state">Cargando usuarios…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: nuevo usuario -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Nuevo usuario</h2>
+    <div class="sub">Crea la cuenta de acceso y asigna su rol en la clínica.</div>
+
+    <div class="error-box" id="modalError"></div>
+
+    <form id="formUsuario">
+      <div class="field-row">
+        <div class="field">
+          <label>Nombres</label>
+          <input type="text" id="f_nombres" required>
+        </div>
+        <div class="field">
+          <label>Apellidos</label>
+          <input type="text" id="f_apellidos" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="f_email" required>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Cédula</label>
+          <input type="text" id="f_cedula" maxlength="10">
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="text" id="f_telefono">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Rol</label>
+        <select id="f_rol_id" required>
+          <option value="">Selecciona un rol…</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo de personal</label>
+        <select id="f_tipo_empleado" required>
+          <option value="administrador">Administrador</option>
+          <option value="doctor">Doctor</option>
+          <option value="auxiliar">Auxiliar veterinario</option>
+          <option value="secretaria">Secretaria</option>
+          <option value="contador">Contador</option>
+        </select>
+        <div class="field-hint">Se crea también su ficha de personal (necesaria para aplicar tratamientos/vacunas).</div>
+      </div>
+
+      <div class="field">
+        <label>Contraseña temporal</label>
+        <input type="password" id="f_password" required minlength="8">
+        <div class="field-hint">Mínimo 8 caracteres. El usuario deberá cambiarla en su primer ingreso.</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardar">Crear usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const usuario = requireRole('admin');
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  let roles = [];
+
+  async function cargarRoles() {
+    roles = await apiFetch('/roles');
+    const select = document.getElementById('f_rol_id');
+    select.innerHTML = '<option value="">Selecciona un rol…</option>' +
+      roles.map(r => `<option value="${r.id}">${ETIQUETAS_ROL[r.nombre] || r.nombre}</option>`).join('');
+  }
+
+  document.getElementById('f_rol_id').addEventListener('change', (e) => {
+    const rol = roles.find(r => String(r.id) === e.target.value);
+    if (rol && ['doctor', 'auxiliar', 'secretaria', 'contador'].includes(rol.nombre)) {
+      document.getElementById('f_tipo_empleado').value = rol.nombre;
+    } else {
+      document.getElementById('f_tipo_empleado').value = 'administrador';
+    }
+  });
+
+  async function cargarUsuarios() {
+    const tbody = document.getElementById('tablaUsuarios');
+    try {
+      const { data } = await apiFetch('/usuarios');
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Todavía no hay usuarios registrados.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(u => `
+        <tr>
+          <td>
+            <div class="cell-user">
+              <div class="avatar">${iniciales(u.nombres, u.apellidos)}</div>
+              <div>
+                <div class="name">${u.nombres} ${u.apellidos}</div>
+                <div class="email">${u.email}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-pill role-${u.rol}">${ETIQUETAS_ROL[u.rol] || u.rol}</span></td>
+          <td>${u.cedula || '—'}${u.telefono ? ' · ' + u.telefono : ''}</td>
+          <td><span class="estado-dot estado-${u.estado}">${u.estado.charAt(0).toUpperCase() + u.estado.slice(1)}</span></td>
+          <td class="mono" style="font-size:12px;color:var(--ink-faint);">
+            ${u.ultimo_acceso ? new Date(u.ultimo_acceso).toLocaleDateString('es-EC') : 'Nunca'}
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn" title="${u.estado === 'activo' ? 'Desactivar' : 'Activar'}"
+                onclick="toggleEstado(${u.id}, '${u.estado}')">
+                ${u.estado === 'activo'
+                  ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>'
+                  : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>'}
+              </button>
+            </div>
+          </td>
+        </tr>`).join('');
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  async function toggleEstado(id, estadoActual) {
+    const nuevo = estadoActual === 'activo' ? 'inactivo' : 'activo';
+    try {
+      await apiFetch(`/usuarios/${id}/estado`, { method: 'PATCH', body: JSON.stringify({ estado: nuevo }) });
+      cargarUsuarios();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function abrirModal() {
+    document.getElementById('formUsuario').reset();
+    document.getElementById('modalError').classList.remove('show');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function cerrarModal() { document.getElementById('overlay').classList.remove('open'); }
+  document.getElementById('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') cerrarModal(); });
+
+  document.getElementById('formUsuario').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('modalError');
+    const btn = document.getElementById('btnGuardar');
+    errorBox.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Creando…';
+
+    try {
+      await apiFetch('/usuarios', {
+        method: 'POST',
+        body: JSON.stringify({
+          nombres: document.getElementById('f_nombres').value.trim(),
+          apellidos: document.getElementById('f_apellidos').value.trim(),
+          email: document.getElementById('f_email').value.trim(),
+          cedula: document.getElementById('f_cedula').value.trim() || null,
+          telefono: document.getElementById('f_telefono').value.trim() || null,
+          rol_id: Number(document.getElementById('f_rol_id').value),
+          tipo_empleado: document.getElementById('f_tipo_empleado').value || null,
+          password: document.getElementById('f_password').value,
+        }),
+      });
+      cerrarModal();
+      cargarUsuarios();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Crear usuario';
+    }
+  });
+
+  cargarRoles();
+  cargarUsuarios();
+</script>
+</body>
+</html>
