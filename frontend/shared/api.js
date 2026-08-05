@@ -2,7 +2,7 @@
  * Helper compartido: autenticación + llamadas a la API del backend.
  * Se incluye en login.html, dashboard.html y usuarios.html.
  */
-const API_BASE = window.VETCLOUD_API_BASE || 'https://vetcloud-backend-production.up.railway.app';
+const API_BASE = window.VETCLOUD_API_BASE || 'https://vetcloud-backend-production.up.railway.app/api/v1';
 function getToken() {
   return localStorage.getItem('vetcloud_token');
 }
