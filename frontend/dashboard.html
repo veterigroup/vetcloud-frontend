@@ -475,23 +475,37 @@
     }
   }
 
+  // ---------- Carga inicial (independiente del gráfico) ----------
+  cargarKpis();
+  cargarProximasCitas();
+  cargarAlertas();
+  cargarCargaDoctores();
+
   // ---------- Gráfico mascotas atendidas ----------
-  const ctx = document.getElementById('patientsChart');
-  let chart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: [], datasets: [{ data: [], backgroundColor: '#1E4D40', borderRadius: 5, maxBarThickness: 28 }] },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display:false } },
-      scales: {
-        x: { grid: { display:false }, ticks: { color:'#5B6961', font:{ family:'Inter', size:11 } } },
-        y: { beginAtZero:true, grid: { color:'#EEF1E9' }, ticks: { color:'#5B6961', font:{ family:'Inter', size:11 }, precision:0 } }
+  let chart = null;
+  try {
+    const ctx = document.getElementById('patientsChart');
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ data: [], backgroundColor: '#1E4D40', borderRadius: 5, maxBarThickness: 28 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display:false } },
+        scales: {
+          x: { grid: { display:false }, ticks: { color:'#5B6961', font:{ family:'Inter', size:11 } } },
+          y: { beginAtZero:true, grid: { color:'#EEF1E9' }, ticks: { color:'#5B6961', font:{ family:'Inter', size:11 }, precision:0 } }
+        }
       }
-    }
-  });
+    });
+  } catch (err) {
+    console.error('No se pudo inicializar el gráfico (Chart.js no cargó):', err);
+    const wrap = document.querySelector('.chart-wrap');
+    if (wrap) wrap.innerHTML = '<div class="empty-state">No se pudo cargar el gráfico.</div>';
+  }
 
   async function cargarGrafico(periodo) {
+    if (!chart) return;
     try {
       const serie = await apiFetch(`/dashboard/mascotas-atendidas?periodo=${periodo}`);
       chart.data.labels = serie.map(s => s.etiqueta);
@@ -510,11 +524,6 @@
     });
   });
 
-  // ---------- Carga inicial ----------
-  cargarKpis();
-  cargarProximasCitas();
-  cargarAlertas();
-  cargarCargaDoctores();
   cargarGrafico('diario');
 </script>
 </body>
