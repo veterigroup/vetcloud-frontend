@@ -132,22 +132,47 @@
     </div>
     <nav>
       <div class="nav-group">
-        <a class="nav-item" href="./dashboard.html">
+        <a class="nav-item " href="./dashboard.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
           Dashboard
         </a>
-        <a class="nav-item" href="./clientes.html">
+        <a class="nav-item " href="./clientes.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
           Clientes
         </a>
-        <a class="nav-item" href="./mascotas.html">
+        <a class="nav-item " href="./mascotas.html" data-roles="admin,doctor,secretaria,auxiliar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
           Mascotas
         </a>
+        <a class="nav-item " href="#" data-roles="admin,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+          Historias clínicas
+        </a>
       </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Operación</div>
+        <a class="nav-item " href="./inventario.html" data-roles="admin,contador,auxiliar,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          Inventario
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+          Proformas
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,contador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
+          Facturación
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,contador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+      </div>
+
       <div class="nav-group">
         <div class="nav-label">Sistema</div>
-        <a class="nav-item active" href="./usuarios.html">
+        <a class="nav-item active" href="./usuarios.html" data-roles="admin">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
           Usuarios y roles
         </a>
@@ -253,16 +278,16 @@
         </select>
       </div>
 
-      <div class="field">
+      <div class="field" id="campoTipoEmpleado" style="display:none;">
         <label>Tipo de personal</label>
-        <select id="f_tipo_empleado" required>
-          <option value="administrador">Administrador</option>
+        <select id="f_tipo_empleado">
+          <option value="">— No aplica (rol administrativo) —</option>
           <option value="doctor">Doctor</option>
           <option value="auxiliar">Auxiliar veterinario</option>
           <option value="secretaria">Secretaria</option>
           <option value="contador">Contador</option>
         </select>
-        <div class="field-hint">Se crea también su ficha de personal (necesaria para aplicar tratamientos/vacunas).</div>
+        <div class="field-hint">Crea también su ficha de personal (horarios, especialidad, etc.)</div>
       </div>
 
       <div class="field">
@@ -298,11 +323,9 @@
 
   document.getElementById('f_rol_id').addEventListener('change', (e) => {
     const rol = roles.find(r => String(r.id) === e.target.value);
-    if (rol && ['doctor', 'auxiliar', 'secretaria', 'contador'].includes(rol.nombre)) {
-      document.getElementById('f_tipo_empleado').value = rol.nombre;
-    } else {
-      document.getElementById('f_tipo_empleado').value = 'administrador';
-    }
+    const campo = document.getElementById('campoTipoEmpleado');
+    campo.style.display = rol && rol.nombre !== 'admin' ? 'block' : 'none';
+    if (rol) document.getElementById('f_tipo_empleado').value = rol.nombre === 'admin' ? '' : rol.nombre;
   });
 
   async function cargarUsuarios() {
@@ -359,6 +382,7 @@
   function abrirModal() {
     document.getElementById('formUsuario').reset();
     document.getElementById('modalError').classList.remove('show');
+    document.getElementById('campoTipoEmpleado').style.display = 'none';
     document.getElementById('overlay').classList.add('open');
   }
   function cerrarModal() { document.getElementById('overlay').classList.remove('open'); }
