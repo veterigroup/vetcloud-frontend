@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
+        onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js';document.head.appendChild(s);"></script>
 <script src="./shared/api.js"></script>
 <style>
   :root{
@@ -303,7 +304,7 @@
         <div class="panel-head">
           <div>
             <h2>Próximas citas</h2>
-            <div class="sub">Hoy · 30 jul</div>
+            <div class="sub" id="proximasCitasSub">Hoy</div>
           </div>
         </div>
         <div class="appt-list" id="apptList"></div>
@@ -360,6 +361,9 @@
   document.getElementById('today-date').textContent =
     today.toLocaleDateString('es-EC', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
       .replace(/^\w/, c => c.toUpperCase());
+
+  document.getElementById('proximasCitasSub').textContent =
+    'Hoy · ' + today.toLocaleDateString('es-EC', { day:'numeric', month:'short' });
 
   const hora = today.getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
