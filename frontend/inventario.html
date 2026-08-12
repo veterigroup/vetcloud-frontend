@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Inventario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<link rel="stylesheet" href="./shared/panel.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div><div class="brand-name">VetCloud</div><div class="brand-sub" id="clinicName">Cargando…</div></div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item" href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor,secretaria,auxiliar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+        <a class="nav-item" href="#" data-roles="admin,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+          Historias clínicas
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Operación</div>
+        <a class="nav-item active" href="./inventario.html" data-roles="admin,contador,auxiliar,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          Inventario
+        </a>
+        <a class="nav-item" href="#" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+          Proformas
+        </a>
+        <a class="nav-item" href="#" data-roles="admin,contador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
+          Facturación
+        </a>
+        <a class="nav-item" href="#" data-roles="admin,contador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item" href="./usuarios.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting"><div class="greeting-eyebrow">Inventario</div><h1>Productos y stock</h1></div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div><div class="name" id="userName">—</div><div class="role" id="userRole">—</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="vitals">
+      <div class="vital-card c-primary"><div class="tag">Productos activos</div><div class="value" id="kpiActivos">—</div></div>
+      <div class="vital-card c-gold"><div class="tag">Valor de inventario</div><div class="value" id="kpiValor">—</div></div>
+      <div class="vital-card c-red"><div class="tag">Stock bajo</div><div class="value" id="kpiStockBajo">—</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Productos</h2>
+          <div class="sub" id="totalProductos">Cargando…</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="search" id="buscador" placeholder="Buscar por nombre o código…" class="search-input">
+          <button class="btn-primary" id="btnNuevo" onclick="abrirModalProducto()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Nuevo producto
+          </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Producto</th><th>Categoría</th><th>Stock</th><th>Precio venta</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="tablaProductos">
+          <tr><td colspan="6" class="empty-state">Cargando productos…</td></tr>
+        </tbody>
+      </table>
+
+      <div class="pager" id="pager"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal: producto -->
+<div class="overlay" id="overlayProducto">
+  <div class="modal modal-wide">
+    <h2 id="modalTitulo">Nuevo producto</h2>
+    <div class="sub">Datos del producto o insumo.</div>
+    <div class="error-box" id="modalError"></div>
+
+    <form id="formProducto">
+      <input type="hidden" id="f_id">
+      <div class="field-row">
+        <div class="field"><label>Nombre</label><input type="text" id="f_nombre" required></div>
+        <div class="field">
+          <label>Categoría</label>
+          <select id="f_categoria_id">
+            <option value="">Sin categoría</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Código interno</label><input type="text" id="f_codigo_interno"></div>
+        <div class="field"><label>Código de barras</label><input type="text" id="f_codigo_barras"></div>
+      </div>
+      <div class="field"><label>Descripción</label><input type="text" id="f_descripcion"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>Proveedor</label>
+          <select id="f_proveedor_id">
+            <option value="">Sin proveedor</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Unidad de medida</label>
+          <select id="f_unidad_medida">
+            <option value="unidad">Unidad</option>
+            <option value="caja">Caja</option>
+            <option value="frasco">Frasco</option>
+            <option value="ml">Mililitros (ml)</option>
+            <option value="kg">Kilogramos (kg)</option>
+            <option value="tableta">Tableta</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Precio compra</label><input type="number" step="0.01" min="0" id="f_precio_compra"></div>
+        <div class="field"><label>Precio venta</label><input type="number" step="0.01" min="0" id="f_precio_venta" required></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Stock inicial</label><input type="number" step="1" min="0" id="f_stock_actual"></div>
+        <div class="field"><label>Stock mínimo (alerta)</label><input type="number" step="1" min="0" id="f_stock_minimo" value="0"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>¿Requiere receta?</label>
+          <select id="f_requiere_receta">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="f_estado">
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-hint" id="stockHintEdicion" style="display:none;">Para cambiar el stock de un producto existente, usa "Registrar movimiento" en la fila del producto — no se edita el stock directamente aquí.</div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalProducto()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardar">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: movimiento de stock -->
+<div class="overlay" id="overlayMovimiento">
+  <div class="modal">
+    <h2>Registrar movimiento</h2>
+    <div class="sub" id="movProductoNombre">—</div>
+    <div class="error-box" id="movError"></div>
+
+    <form id="formMovimiento">
+      <input type="hidden" id="m_producto_id">
+      <div class="field">
+        <label>Tipo de movimiento</label>
+        <select id="m_tipo" required>
+          <option value="entrada">Entrada (compra / reposición)</option>
+          <option value="salida">Salida (uso interno)</option>
+          <option value="ajuste">Ajuste de conteo</option>
+          <option value="merma">Merma / pérdida</option>
+        </select>
+      </div>
+      <div class="field"><label>Cantidad</label><input type="number" step="1" min="1" id="m_cantidad" required></div>
+      <div class="field"><label>Motivo</label><input type="text" id="m_motivo" placeholder="Ej. Compra a proveedor, vencido, conteo físico…"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalMovimiento()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarMov">Registrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+  applyRoleNav(usuario.rol);
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  const PUEDE_ESCRIBIR = ['admin', 'contador', 'auxiliar', 'superadmin'].includes(usuario.rol);
+  if (!PUEDE_ESCRIBIR) document.getElementById('btnNuevo').style.display = 'none';
+
+  let paginaActual = 1;
+  let terminoBusqueda = '';
+  let categorias = [];
+  let proveedores = [];
+
+  function money(n) { return '$' + Number(n || 0).toFixed(2); }
+
+  async function cargarCatalogos() {
+    try {
+      [categorias, proveedores] = await Promise.all([
+        apiFetch('/categorias-productos'),
+        apiFetch('/proveedores'),
+      ]);
+      const selCat = document.getElementById('f_categoria_id');
+      categorias.forEach(c => selCat.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.nombre}</option>`));
+      const selProv = document.getElementById('f_proveedor_id');
+      proveedores.forEach(p => selProv.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.razon_social}</option>`));
+    } catch (err) { console.error('Error cargando catálogos:', err); }
+  }
+
+  async function cargarKpis() {
+    try {
+      const stockBajo = await apiFetch('/productos/stock-bajo');
+      document.getElementById('kpiStockBajo').textContent = stockBajo.length;
+    } catch (err) { document.getElementById('kpiStockBajo').textContent = '—'; }
+  }
+
+  async function cargarProductos(page = 1) {
+    paginaActual = page;
+    const tbody = document.getElementById('tablaProductos');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Cargando productos…</td></tr>';
+    try {
+      const qs = new URLSearchParams({ page, per_page: 10 });
+      if (terminoBusqueda) qs.set('search', terminoBusqueda);
+      const { data, pagination } = await apiFetch(`/productos?${qs.toString()}`);
+
+      document.getElementById('totalProductos').textContent = `${pagination.total} producto${pagination.total === 1 ? '' : 's'} registrado${pagination.total === 1 ? '' : 's'}`;
+
+      const activos = data.filter(p => p.estado === 'activo').length;
+      document.getElementById('kpiActivos').textContent = activos;
+      const valorTotal = data.reduce((acc, p) => acc + Number(p.precio_venta || 0) * Number(p.stock_actual || 0), 0);
+      document.getElementById('kpiValor').textContent = money(valorTotal);
+
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No se encontraron productos.</td></tr>';
+        document.getElementById('pager').innerHTML = '';
+        return;
+      }
+
+      tbody.innerHTML = data.map(p => {
+        const categoria = categorias.find(c => c.id === p.categoria_id);
+        const stockBajo = Number(p.stock_actual) <= Number(p.stock_minimo);
+        return `
+        <tr>
+          <td>
+            <div class="name" style="font-weight:500;">${p.nombre}</div>
+            <div class="email" style="font-size:12px;color:var(--ink-faint);">${p.codigo_interno || 'Sin código'}</div>
+          </td>
+          <td>${categoria ? categoria.nombre : '—'}</td>
+          <td class="mono" style="${stockBajo ? 'color:var(--red);font-weight:600;' : ''}">${p.stock_actual} ${stockBajo ? '⚠' : ''}</td>
+          <td class="mono">${money(p.precio_venta)}</td>
+          <td><span class="status-pill status-${p.estado}">${p.estado.charAt(0).toUpperCase() + p.estado.slice(1)}</span></td>
+          <td>
+            <div class="row-actions">
+              ${PUEDE_ESCRIBIR ? `
+              <button class="icon-btn" title="Registrar movimiento" onclick='abrirModalMovimiento(${p.id}, ${JSON.stringify(p.nombre)})'>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <button class="icon-btn" title="Editar" onclick='editarProducto(${JSON.stringify(p)})'>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      renderPager(pagination);
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  function renderPager(p) {
+    const el = document.getElementById('pager');
+    if (p.total_pages <= 1) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+      <button class="btn-ghost" ${p.page <= 1 ? 'disabled' : ''} onclick="cargarProductos(${p.page - 1})">← Anterior</button>
+      <span class="pager-info">Página ${p.page} de ${p.total_pages}</span>
+      <button class="btn-ghost" ${p.page >= p.total_pages ? 'disabled' : ''} onclick="cargarProductos(${p.page + 1})">Siguiente →</button>`;
+  }
+
+  let buscarTimeout;
+  document.getElementById('buscador').addEventListener('input', (e) => {
+    clearTimeout(buscarTimeout);
+    buscarTimeout = setTimeout(() => { terminoBusqueda = e.target.value.trim(); cargarProductos(1); }, 350);
+  });
+
+  function abrirModalProducto() {
+    document.getElementById('formProducto').reset();
+    document.getElementById('f_id').value = '';
+    document.getElementById('modalTitulo').textContent = 'Nuevo producto';
+    document.getElementById('modalError').classList.remove('show');
+    document.getElementById('f_stock_actual').disabled = false;
+    document.getElementById('stockHintEdicion').style.display = 'none';
+    document.getElementById('overlayProducto').classList.add('open');
+  }
+  function editarProducto(p) {
+    document.getElementById('f_id').value = p.id;
+    document.getElementById('f_nombre').value = p.nombre || '';
+    document.getElementById('f_categoria_id').value = p.categoria_id || '';
+    document.getElementById('f_codigo_interno').value = p.codigo_interno || '';
+    document.getElementById('f_codigo_barras').value = p.codigo_barras || '';
+    document.getElementById('f_descripcion').value = p.descripcion || '';
+    document.getElementById('f_proveedor_id').value = p.proveedor_id || '';
+    document.getElementById('f_unidad_medida').value = p.unidad_medida || 'unidad';
+    document.getElementById('f_precio_compra').value = p.precio_compra || '';
+    document.getElementById('f_precio_venta').value = p.precio_venta || '';
+    document.getElementById('f_stock_actual').value = p.stock_actual || 0;
+    document.getElementById('f_stock_actual').disabled = true;
+    document.getElementById('stockHintEdicion').style.display = 'block';
+    document.getElementById('f_stock_minimo').value = p.stock_minimo || 0;
+    document.getElementById('f_requiere_receta').value = String(!!p.requiere_receta);
+    document.getElementById('f_estado').value = p.estado || 'activo';
+    document.getElementById('modalTitulo').textContent = 'Editar producto';
+    document.getElementById('modalError').classList.remove('show');
+    document.getElementById('overlayProducto').classList.add('open');
+  }
+  function cerrarModalProducto() { document.getElementById('overlayProducto').classList.remove('open'); }
+  document.getElementById('overlayProducto').addEventListener('click', (e) => { if (e.target.id === 'overlayProducto') cerrarModalProducto(); });
+
+  document.getElementById('formProducto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('modalError');
+    const btn = document.getElementById('btnGuardar');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+
+    const id = document.getElementById('f_id').value;
+    const payload = {
+      nombre: document.getElementById('f_nombre').value.trim(),
+      categoria_id: document.getElementById('f_categoria_id').value || null,
+      codigo_interno: document.getElementById('f_codigo_interno').value.trim() || null,
+      codigo_barras: document.getElementById('f_codigo_barras').value.trim() || null,
+      descripcion: document.getElementById('f_descripcion').value.trim() || null,
+      proveedor_id: document.getElementById('f_proveedor_id').value || null,
+      unidad_medida: document.getElementById('f_unidad_medida').value,
+      precio_compra: document.getElementById('f_precio_compra').value || 0,
+      precio_venta: document.getElementById('f_precio_venta').value,
+      stock_minimo: document.getElementById('f_stock_minimo').value || 0,
+      requiere_receta: document.getElementById('f_requiere_receta').value === 'true',
+      estado: document.getElementById('f_estado').value,
+    };
+    if (!id) payload.stock_actual = document.getElementById('f_stock_actual').value || 0;
+
+    try {
+      if (id) {
+        await apiFetch(`/productos/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      } else {
+        await apiFetch('/productos', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      cerrarModalProducto();
+      cargarProductos(paginaActual);
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  });
+
+  // ---------- Movimientos de stock ----------
+  function abrirModalMovimiento(productoId, nombre) {
+    document.getElementById('formMovimiento').reset();
+    document.getElementById('m_producto_id').value = productoId;
+    document.getElementById('movProductoNombre').textContent = nombre;
+    document.getElementById('movError').classList.remove('show');
+    document.getElementById('overlayMovimiento').classList.add('open');
+  }
+  function cerrarModalMovimiento() { document.getElementById('overlayMovimiento').classList.remove('open'); }
+  document.getElementById('overlayMovimiento').addEventListener('click', (e) => { if (e.target.id === 'overlayMovimiento') cerrarModalMovimiento(); });
+
+  document.getElementById('formMovimiento').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('movError');
+    const btn = document.getElementById('btnGuardarMov');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Registrando…';
+
+    const productoId = document.getElementById('m_producto_id').value;
+    const payload = {
+      tipo_movimiento: document.getElementById('m_tipo').value,
+      cantidad: Number(document.getElementById('m_cantidad').value),
+      motivo: document.getElementById('m_motivo').value.trim() || null,
+      empleado_id: usuario.empleado_id || null,
+    };
+
+    try {
+      await apiFetch(`/productos/${productoId}/movimientos`, { method: 'POST', body: JSON.stringify(payload) });
+      cerrarModalMovimiento();
+      cargarProductos(paginaActual);
+      cargarKpis();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Registrar';
+    }
+  });
+
+  (async function init() {
+    await cargarCatalogos();
+    await cargarProductos();
+    cargarKpis();
+  })();
+</script>
+</body>
+</html>
