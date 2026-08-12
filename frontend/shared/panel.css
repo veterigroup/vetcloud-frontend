@@ -73,6 +73,29 @@ tbody tr:last-child td{border-bottom:none;}
 .role-doctor,.role-auxiliar{background:var(--primary-tint);color:var(--primary);}
 .role-secretaria,.role-contador{background:var(--surface-soft);color:var(--ink-soft);}
 
+/* KPIs (tarjetas de resumen arriba de un módulo) */
+.vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px;}
+.vital-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;position:relative;overflow:hidden;}
+.vital-card .tag{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
+.vital-card .value{font-size:28px;font-weight:600;margin-top:6px;}
+.vital-card .delta{font-size:12px;margin-top:4px;}
+.vital-card::before{content:"";position:absolute;right:14px;top:16px;width:8px;height:8px;border-radius:50%;}
+.vital-card.c-primary::before{background:var(--primary);}
+.vital-card.c-gold::before{background:var(--gold);}
+.vital-card.c-red::before{background:var(--red);}
+
+/* Pestañas dentro de un panel (ej. Facturación / Proformas / Cuentas por cobrar) */
+.tabs{display:flex;gap:4px;background:var(--surface-soft);padding:3px;border-radius:9px;width:fit-content;margin-bottom:16px;}
+.tab{padding:7px 14px;font-size:12.5px;border:none;background:transparent;border-radius:7px;color:var(--ink-soft);}
+.tab.active{background:var(--surface);color:var(--primary-ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06);}
+
+/* Badges de estado genéricos (proformas, facturas, caja, movimientos) */
+.status-pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap;display:inline-block;}
+.status-pendiente{background:var(--gold-tint);color:var(--gold);}
+.status-aprobada,.status-pagada,.status-activo,.status-abierta,.status-atendida,.status-confirmada{background:var(--primary-tint);color:var(--primary);}
+.status-rechazada,.status-anulada,.status-cancelada,.status-vencida,.status-bloqueado{background:var(--red-tint);color:var(--red);}
+.status-facturada,.status-cerrada,.status-inactivo{background:var(--surface-soft);color:var(--ink-soft);}
+
 .link-chip{font-size:12.5px;font-weight:600;color:var(--primary);background:var(--primary-tint);padding:4px 10px;border-radius:20px;}
 .link-chip:hover{opacity:.85;}
 
