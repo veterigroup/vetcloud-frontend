@@ -177,9 +177,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
           Dashboard
         </a>
-        <a class="nav-item" href="#" data-roles="admin,doctor,secretaria,auxiliar">
+        <a class="nav-item" href="./citas.html" data-roles="admin,doctor,secretaria,auxiliar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-          Citas <span class="count">12</span>
+          Citas
         </a>
         <a class="nav-item" href="./clientes.html" data-roles="admin,doctor,secretaria,auxiliar,contador">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
@@ -448,6 +448,7 @@
         ...a.stock_bajo.map(p => ({ tipo:'red', t1: p.nombre, t2: `Stock: ${p.stock_actual} / mínimo ${p.stock_minimo}` })),
         ...a.facturas_vencidas.map(f => ({ tipo:'gold', t1: `Factura ${f.secuencial} vencida`, t2: `Cliente: ${f.nombres} · $${f.total}` })),
         ...a.proformas_por_vencer.map(p => ({ tipo:'gold', t1: `Proforma pendiente de aprobación`, t2: `Vence: ${p.fecha_validez} · $${p.total}` })),
+        ...a.vacunas_por_vencer.map(v => ({ tipo:'gold', t1: `Vacuna próxima: ${v.vacuna}`, t2: `${v.mascota} · ${v.fecha_proxima_dosis}` })),
       ];
       alertList.innerHTML = items.length
         ? items.map(x => `<div class="alert-row"><div class="alert-dot ${x.tipo === 'gold' ? 'gold' : ''}"></div>
