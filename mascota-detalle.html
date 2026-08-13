@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Ficha de mascota</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<link rel="stylesheet" href="./shared/panel.css">
+<style>
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-faint);margin-bottom:10px;}
+  .back-link:hover{color:var(--ink);}
+
+  .pet-header{display:flex;gap:18px;align-items:center;}
+  .pet-avatar{width:64px;height:64px;border-radius:16px;background:var(--primary-tint);display:flex;
+    align-items:center;justify-content:center;font-size:30px;flex-shrink:0;}
+  .pet-meta{font-size:13px;color:var(--ink-faint);margin-top:3px;}
+  .pet-tags{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .pet-tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--surface-soft);color:var(--ink-soft);}
+
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-top:18px;}
+  .info-item .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+  .info-item .v{font-size:14px;font-weight:500;margin-top:3px;}
+
+  .grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:16px;}
+  @media (max-width:980px){.grid-2{grid-template-columns:1fr;}}
+
+  .type-badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;text-transform:capitalize;
+    background:var(--surface-soft);color:var(--ink-soft);}
+  .clinical-box{background:var(--surface-soft);border-radius:10px;padding:14px 16px;margin-top:14px;}
+  .clinical-box .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+  .clinical-box .v{font-size:13px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div><div class="brand-name">VetCloud</div><div class="brand-sub" id="clinicName">Cargando…</div></div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item " href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item " href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item active" href="./mascotas.html" data-roles="admin,doctor,secretaria,auxiliar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+        <a class="nav-item " href="./citas.html" data-roles="admin,doctor,secretaria,auxiliar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          Citas
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+          Historias clínicas
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Operación</div>
+        <a class="nav-item " href="./inventario.html" data-roles="admin,contador,auxiliar,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          Inventario
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+          Proformas
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,contador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
+          Facturación
+        </a>
+        <a class="nav-item " href="#" data-roles="admin,contador">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item " href="./usuarios.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting"><div class="greeting-eyebrow">Mascota</div><h1>Ficha del paciente</h1></div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div><div class="name" id="userName">—</div><div class="role" id="userRole">—</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <a href="./mascotas.html" class="back-link">← Volver a mascotas</a>
+
+    <div class="panel" id="panelMascota">
+      <div class="empty-state">Cargando ficha…</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Historial completo</h2><div class="sub">Línea de tiempo unificada: consultas, tratamientos, vacunas, facturas…</div></div>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="empty-state">Cargando historial…</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Ficha clínica</h2><div class="sub">Alergias y condiciones preexistentes</div></div>
+        </div>
+        <div id="fichaClinica"><div class="empty-state">Cargando…</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+  applyRoleNav(usuario.rol);
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  const mascotaId = new URLSearchParams(window.location.search).get('id');
+  if (!mascotaId) window.location.href = './mascotas.html';
+
+  const iconos = { Canino:'🐕', Felino:'🐈', Ave:'🐦', Roedor:'🐹', Reptil:'🦎', Equino:'🐴', Exótico:'🦜' };
+  const iconosEvento = {
+    consulta: '🩺', tratamiento: '💉', vacuna: '💊', cirugia: '🔬',
+    proforma: '📋', factura: '🧾', examen: '🧪', nota: '📝',
+  };
+
+  async function cargarFicha() {
+    const panel = document.getElementById('panelMascota');
+    try {
+      const m = await apiFetch(`/mascotas/${mascotaId}`);
+      const edad = m.fecha_nacimiento
+        ? Math.floor((Date.now() - new Date(m.fecha_nacimiento)) / (365.25 * 24 * 3600 * 1000)) + ' años'
+        : (m.edad_aproximada || '—');
+
+      panel.innerHTML = `
+        <div class="pet-header">
+          <div class="pet-avatar">🐾</div>
+          <div>
+            <h2 style="font-size:22px;">${m.nombre}</h2>
+            <div class="pet-meta">${m.sexo ? m.sexo.charAt(0).toUpperCase() + m.sexo.slice(1) : 'Sexo no registrado'}</div>
+            <div class="pet-tags">
+              ${m.microchip ? `<span class="pet-tag">Chip: ${m.microchip}</span>` : ''}
+              ${m.esterilizado ? '<span class="pet-tag">Esterilizado</span>' : ''}
+              <span class="pet-tag estado-${m.estado}">${m.estado.charAt(0).toUpperCase() + m.estado.slice(1)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="info-item"><div class="k">Edad</div><div class="v">${edad}</div></div>
+          <div class="info-item"><div class="k">Peso actual</div><div class="v">${m.peso_actual_kg ? m.peso_actual_kg + ' kg' : '—'}</div></div>
+          <div class="info-item"><div class="k">Color</div><div class="v">${m.color || '—'}</div></div>
+        </div>`;
+    } catch (err) {
+      panel.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  async function cargarHistorial() {
+    const el = document.getElementById('timeline');
+    try {
+      const eventos = await apiFetch(`/mascotas/${mascotaId}/historial`);
+      if (!eventos.length) {
+        el.innerHTML = '<div class="empty-state">Todavía no hay eventos registrados para esta mascota.</div>';
+        return;
+      }
+      el.innerHTML = eventos.map(ev => `
+        <div class="timeline-item">
+          <div class="timeline-dot ${ev.tipo_evento}">${iconosEvento[ev.tipo_evento] || '•'}</div>
+          <div class="timeline-content">
+            <div class="t1">${ev.titulo} <span class="type-badge">${ev.tipo_evento}</span></div>
+            ${ev.descripcion ? `<div class="t2">${ev.descripcion}</div>` : ''}
+            <div class="t3">${new Date(ev.fecha).toLocaleString('es-EC', { dateStyle:'medium', timeStyle:'short' })}
+              ${ev.empleado_nombres ? ' · ' + ev.empleado_nombres + ' ' + (ev.empleado_apellidos || '') : ''}</div>
+          </div>
+        </div>`).join('');
+    } catch (err) {
+      el.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  async function cargarFichaClinica() {
+    const el = document.getElementById('fichaClinica');
+    try {
+      const h = await apiFetch(`/mascotas/${mascotaId}/historia-clinica`);
+      if (!h) {
+        el.innerHTML = '<div class="empty-state">Sin ficha clínica registrada todavía.</div>';
+        return;
+      }
+      el.innerHTML = `
+        <div class="clinical-box"><div class="k">Alergias</div><div class="v">${h.alergias || 'Ninguna registrada'}</div></div>
+        <div class="clinical-box"><div class="k">Condiciones preexistentes</div><div class="v">${h.condiciones_preexistentes || 'Ninguna registrada'}</div></div>
+        <div class="clinical-box"><div class="k">Observaciones generales</div><div class="v">${h.observaciones_generales || '—'}</div></div>`;
+    } catch (err) {
+      el.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  cargarFicha();
+  cargarHistorial();
+  cargarFichaClinica();
+</script>
+</body>
+</html>
