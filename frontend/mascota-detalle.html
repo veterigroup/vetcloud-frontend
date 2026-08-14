@@ -32,6 +32,14 @@
   .clinical-box{background:var(--surface-soft);border-radius:10px;padding:14px 16px;margin-top:14px;}
   .clinical-box .k{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
   .clinical-box .v{font-size:13px;line-height:1.5;}
+
+  .field textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+    font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);outline:none;resize:vertical;min-height:64px;}
+  .field textarea:focus{border-color:var(--primary);}
+  .ok-box{background:var(--primary-tint);color:var(--primary);font-size:12.5px;padding:9px 11px;border-radius:8px;margin-bottom:14px;display:none;}
+  .ok-box.show{display:block;}
+  .field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .actions-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 </style>
 </head>
 <body>
@@ -59,7 +67,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
           Citas
         </a>
-        <a class="nav-item " href="#" data-roles="admin,doctor">
+        <a class="nav-item " href="./mascotas.html" data-roles="admin,doctor">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
           Historias clínicas
         </a>
@@ -123,6 +131,16 @@
       <div class="empty-state">Cargando ficha…</div>
     </div>
 
+    <div class="actions-row">
+      <button class="btn-primary" onclick="abrirModalConsulta()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+        Nueva consulta
+      </button>
+      <button class="btn-ghost" onclick="abrirModalTratamiento()">Aplicar tratamiento</button>
+      <button class="btn-ghost" onclick="abrirModalVacuna()">Aplicar vacuna</button>
+      <button class="btn-ghost" onclick="abrirModalFicha()">Editar ficha clínica</button>
+    </div>
+
     <div class="grid-2">
       <div class="panel">
         <div class="panel-head">
@@ -141,6 +159,105 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- MODAL: editar ficha clínica -->
+<div class="overlay" id="overlayFicha">
+  <div class="modal">
+    <h2>Ficha clínica</h2>
+    <div class="sub">Alergias y condiciones preexistentes de esta mascota.</div>
+    <div class="error-box" id="errorFicha"></div>
+    <form id="formFicha">
+      <div class="field"><label>Alergias</label><textarea id="fi_alergias" placeholder="Ninguna registrada"></textarea></div>
+      <div class="field"><label>Condiciones preexistentes</label><textarea id="fi_condiciones" placeholder="Ninguna registrada"></textarea></div>
+      <div class="field"><label>Observaciones generales</label><textarea id="fi_observaciones"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayFicha')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnFicha">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: nueva consulta -->
+<div class="overlay" id="overlayConsulta">
+  <div class="modal modal-wide">
+    <h2>Nueva consulta</h2>
+    <div class="sub">Registra la visita médica de hoy.</div>
+    <div class="error-box" id="errorConsulta"></div>
+    <form id="formConsulta">
+      <div class="field-row">
+        <div class="field"><label>Doctor</label><select id="c_doctor_id" required></select></div>
+        <div class="field"><label>Motivo de consulta</label><input type="text" id="c_motivo" required></div>
+      </div>
+      <div class="field"><label>Anamnesis</label><textarea id="c_anamnesis"></textarea></div>
+      <div class="field-row3">
+        <div class="field"><label>Temperatura (°C)</label><input type="number" step="0.1" id="c_temp"></div>
+        <div class="field"><label>Peso (kg)</label><input type="number" step="0.01" id="c_peso"></div>
+        <div class="field"><label>Frec. cardiaca</label><input type="number" id="c_fc"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Frec. respiratoria</label><input type="number" id="c_fr"></div>
+        <div class="field"><label>Próxima cita sugerida</label><input type="date" id="c_proxima"></div>
+      </div>
+      <div class="field"><label>Examen físico</label><textarea id="c_examen"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Diagnóstico presuntivo</label><textarea id="c_dx_presuntivo"></textarea></div>
+        <div class="field"><label>Diagnóstico definitivo</label><textarea id="c_dx_definitivo"></textarea></div>
+      </div>
+      <div class="field"><label>Plan de tratamiento</label><textarea id="c_plan"></textarea></div>
+      <div class="field"><label>Observaciones</label><textarea id="c_obs"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayConsulta')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnConsulta">Guardar consulta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: aplicar tratamiento -->
+<div class="overlay" id="overlayTratamiento">
+  <div class="modal">
+    <h2>Aplicar tratamiento</h2>
+    <div class="sub">Se registra en el historial de la mascota.</div>
+    <div class="error-box" id="errorTratamiento"></div>
+    <form id="formTratamiento">
+      <div class="field"><label>Tratamiento</label><select id="t_tratamiento_id" required></select></div>
+      <div class="field"><label>Aplicado por</label><select id="t_empleado_id" required></select></div>
+      <div class="field-row">
+        <div class="field"><label>Dosis</label><input type="text" id="t_dosis"></div>
+        <div class="field"><label>Vía de administración</label><input type="text" id="t_via" placeholder="Oral, IM, IV…"></div>
+      </div>
+      <div class="field"><label>Costo</label><input type="number" step="0.01" id="t_costo"></div>
+      <div class="field"><label>Observaciones</label><textarea id="t_obs"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayTratamiento')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnTratamiento">Registrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: aplicar vacuna -->
+<div class="overlay" id="overlayVacuna">
+  <div class="modal">
+    <h2>Aplicar vacuna</h2>
+    <div class="sub">Si defines la próxima dosis, se crea sola la cita de refuerzo.</div>
+    <div class="error-box" id="errorVacuna"></div>
+    <form id="formVacuna">
+      <div class="field"><label>Vacuna</label><select id="v_vacuna_id" required></select></div>
+      <div class="field"><label>Aplicada por</label><select id="v_empleado_id" required></select></div>
+      <div class="field-row">
+        <div class="field"><label>Fecha de aplicación</label><input type="date" id="v_fecha" required></div>
+        <div class="field"><label>Lote</label><input type="text" id="v_lote"></div>
+      </div>
+      <div class="field"><label>Próxima dosis (opcional)</label><input type="date" id="v_proxima"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayVacuna')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnVacuna">Registrar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -234,6 +351,169 @@
   cargarFicha();
   cargarHistorial();
   cargarFichaClinica();
+
+  // --- Datos compartidos para los selects ---
+  let doctores = [];
+  let tratamientosCatalogo = [];
+  let vacunasCatalogo = [];
+
+  async function cargarDoctores() {
+    if (doctores.length) return doctores;
+    doctores = await apiFetch('/catalogos/doctores');
+    return doctores;
+  }
+  function opcionesDoctores() {
+    return doctores.map(d => `<option value="${d.id}">${d.nombres} ${d.apellidos}${d.especialidad ? ' · ' + d.especialidad : ''}</option>`).join('');
+  }
+
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay').forEach(ov => {
+    ov.addEventListener('click', (e) => { if (e.target === ov) cerrarModal(ov.id); });
+  });
+
+  async function manejarSubmit({ formId, btnId, errorId, overlayId, url, body, alRecargar }) {
+    const form = document.getElementById(formId);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorBox = document.getElementById(errorId);
+      const btn = document.getElementById(btnId);
+      const textoOriginal = btn.textContent;
+      errorBox.classList.remove('show');
+      btn.disabled = true;
+      btn.textContent = 'Guardando…';
+      try {
+        await apiFetch(url, { method: 'POST', body: JSON.stringify(body()) });
+        cerrarModal(overlayId);
+        form.reset();
+        await alRecargar();
+      } catch (err) {
+        errorBox.textContent = err.message;
+        errorBox.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
+    });
+  }
+
+  // --- Ficha clínica ---
+  async function abrirModalFicha() {
+    document.getElementById('errorFicha').classList.remove('show');
+    try {
+      const h = await apiFetch(`/mascotas/${mascotaId}/historia-clinica`);
+      document.getElementById('fi_alergias').value = h?.alergias || '';
+      document.getElementById('fi_condiciones').value = h?.condiciones_preexistentes || '';
+      document.getElementById('fi_observaciones').value = h?.observaciones_generales || '';
+    } catch (err) { /* si no existe todavía, el formulario queda vacío */ }
+    document.getElementById('overlayFicha').classList.add('open');
+  }
+  document.getElementById('formFicha').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorFicha');
+    const btn = document.getElementById('btnFicha');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      await apiFetch(`/mascotas/${mascotaId}/historia-clinica`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          alergias: document.getElementById('fi_alergias').value.trim() || null,
+          condiciones_preexistentes: document.getElementById('fi_condiciones').value.trim() || null,
+          observaciones_generales: document.getElementById('fi_observaciones').value.trim() || null,
+        }),
+      });
+      cerrarModal('overlayFicha');
+      cargarFichaClinica();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  });
+
+  // --- Nueva consulta ---
+  async function abrirModalConsulta() {
+    document.getElementById('errorConsulta').classList.remove('show');
+    await cargarDoctores();
+    document.getElementById('c_doctor_id').innerHTML = opcionesDoctores();
+    document.getElementById('overlayConsulta').classList.add('open');
+  }
+  manejarSubmit({
+    formId: 'formConsulta', btnId: 'btnConsulta', errorId: 'errorConsulta', overlayId: 'overlayConsulta',
+    url: '/consultas',
+    body: () => ({
+      mascota_id: mascotaId,
+      doctor_id: document.getElementById('c_doctor_id').value,
+      motivo_consulta: document.getElementById('c_motivo').value.trim(),
+      anamnesis: document.getElementById('c_anamnesis').value.trim() || null,
+      temperatura_c: document.getElementById('c_temp').value || null,
+      peso_kg: document.getElementById('c_peso').value || null,
+      frecuencia_cardiaca: document.getElementById('c_fc').value || null,
+      frecuencia_respiratoria: document.getElementById('c_fr').value || null,
+      examen_fisico: document.getElementById('c_examen').value.trim() || null,
+      diagnostico_presuntivo: document.getElementById('c_dx_presuntivo').value.trim() || null,
+      diagnostico_definitivo: document.getElementById('c_dx_definitivo').value.trim() || null,
+      plan_tratamiento: document.getElementById('c_plan').value.trim() || null,
+      observaciones: document.getElementById('c_obs').value.trim() || null,
+      proxima_cita_sugerida: document.getElementById('c_proxima').value || null,
+    }),
+    alRecargar: cargarHistorial,
+  });
+
+  // --- Aplicar tratamiento ---
+  async function abrirModalTratamiento() {
+    document.getElementById('errorTratamiento').classList.remove('show');
+    await cargarDoctores();
+    if (!tratamientosCatalogo.length) {
+      const res = await apiFetch('/catalogos/tratamientos?per_page=100');
+      tratamientosCatalogo = res.data;
+    }
+    document.getElementById('t_tratamiento_id').innerHTML = tratamientosCatalogo
+      .map(t => `<option value="${t.id}">${t.nombre}${t.categoria ? ' · ' + t.categoria : ''}</option>`).join('');
+    document.getElementById('t_empleado_id').innerHTML = opcionesDoctores();
+    document.getElementById('overlayTratamiento').classList.add('open');
+  }
+  manejarSubmit({
+    formId: 'formTratamiento', btnId: 'btnTratamiento', errorId: 'errorTratamiento', overlayId: 'overlayTratamiento',
+    url: `/mascotas/${mascotaId}/aplicar-tratamiento`,
+    body: () => ({
+      tratamiento_id: document.getElementById('t_tratamiento_id').value,
+      empleado_id: document.getElementById('t_empleado_id').value,
+      dosis: document.getElementById('t_dosis').value.trim() || null,
+      via_administracion: document.getElementById('t_via').value.trim() || null,
+      costo: document.getElementById('t_costo').value || null,
+      observaciones: document.getElementById('t_obs').value.trim() || null,
+    }),
+    alRecargar: cargarHistorial,
+  });
+
+  // --- Aplicar vacuna ---
+  async function abrirModalVacuna() {
+    document.getElementById('errorVacuna').classList.remove('show');
+    await cargarDoctores();
+    if (!vacunasCatalogo.length) {
+      const res = await apiFetch('/catalogos/vacunas?per_page=100');
+      vacunasCatalogo = res.data;
+    }
+    document.getElementById('v_vacuna_id').innerHTML = vacunasCatalogo
+      .map(v => `<option value="${v.id}">${v.nombre}${v.fabricante ? ' · ' + v.fabricante : ''}</option>`).join('');
+    document.getElementById('v_empleado_id').innerHTML = opcionesDoctores();
+    document.getElementById('v_fecha').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('overlayVacuna').classList.add('open');
+  }
+  manejarSubmit({
+    formId: 'formVacuna', btnId: 'btnVacuna', errorId: 'errorVacuna', overlayId: 'overlayVacuna',
+    url: `/mascotas/${mascotaId}/aplicar-vacuna`,
+    body: () => ({
+      vacuna_id: document.getElementById('v_vacuna_id').value,
+      empleado_id: document.getElementById('v_empleado_id').value,
+      fecha_aplicacion: document.getElementById('v_fecha').value,
+      lote: document.getElementById('v_lote').value.trim() || null,
+      fecha_proxima_dosis: document.getElementById('v_proxima').value || null,
+    }),
+    alRecargar: cargarHistorial,
+  });
 </script>
 </body>
 </html>
