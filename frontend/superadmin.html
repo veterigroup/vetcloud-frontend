@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Panel administrativo global</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<style>
+  :root{
+    --bg:#F3F4EE; --surface:#FFFFFF; --surface-soft:#EEF1E9;
+    --ink:#17231C; --ink-soft:#5B6961; --ink-faint:#8B968E; --line:#DDE1D6;
+    --primary:#1E4D40; --primary-ink:#0E2A22; --primary-tint:#E1EDE6;
+    --gold:#C98A2B; --gold-tint:#F6E9D2; --red:#AF3B3B; --red-tint:#F5E2E0;
+    --radius:14px; --shadow:0 1px 2px rgba(23,35,28,0.04), 0 8px 24px rgba(23,35,28,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;color:var(--primary-ink);}
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh;}
+  .sidebar{background:var(--primary-ink);color:#EAF2ED;padding:24px 16px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--primary-ink);font-family:'Fraunces',serif;font-weight:600;font-size:17px;flex-shrink:0;}
+  .brand-name{font-family:'Fraunces',serif;font-size:18px;letter-spacing:.2px;}
+  .brand-sub{font-size:11px;color:#B9CFC3;margin-top:1px;}
+  .nav-group{display:flex;flex-direction:column;gap:2px;}
+  .nav-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8FB0A1;padding:6px 12px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:14px;color:#D7E7DE;transition:background .15s;}
+  .nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:.85;}
+  .nav-item:hover{background:rgba(255,255,255,.06);}
+  .nav-item.active{background:rgba(255,255,255,.12);color:#fff;font-weight:500;}
+  .sidebar-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;font-size:12px;color:#9FBCAE;}
+  .main{padding:22px 30px 60px;max-width:1320px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap;}
+  .greeting-eyebrow{font-size:12px;color:var(--ink-faint);letter-spacing:.03em;margin-bottom:2px;}
+  .greeting h1{font-size:26px;}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
+  .user-chip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);padding:6px 12px 6px 6px;border-radius:30px;}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--gold-tint);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+  .user-chip .name{font-size:13px;font-weight:500;}
+  .user-chip .role{font-size:11px;color:var(--ink-faint);}
+  .logout-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);transition:.15s;}
+  .logout-btn:hover{background:var(--red-tint);color:var(--red);border-color:transparent;}
+  .menu-toggle{display:none;}
+
+  .vitals{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .vital-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;}
+  .vital-card .tag{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
+  .vital-card .value{font-size:30px;font-weight:600;margin-top:6px;}
+
+  .panel{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .panel-head h2{font-size:16px;}
+  .panel-head .sub{font-size:12px;color:var(--ink-faint);margin-top:2px;font-family:'Inter',sans-serif;}
+  .search-input{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;width:220px;outline:none;}
+  .search-input:focus{border-color:var(--primary);}
+
+  .btn-primary{background:var(--primary);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .btn-primary:hover{opacity:.92;}
+  .btn-ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:500;}
+  .btn-ghost:hover{background:var(--surface-soft);}
+  .btn-danger{color:var(--red);border-color:transparent;background:var(--red-tint);}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);
+    padding:0 12px 10px;font-weight:600;border-bottom:1px solid var(--line);}
+  tbody td{padding:13px 12px;border-bottom:1px solid var(--surface-soft);vertical-align:middle;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:var(--surface-soft);}
+  tbody tr:last-child td{border-bottom:none;}
+  .cell-clinic .name{font-weight:500;}
+  .cell-clinic .meta{font-size:12px;color:var(--ink-faint);}
+  .badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--primary-tint);color:var(--primary);}
+  .estado-dot{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;}
+  .estado-dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ink-faint);}
+  .estado-activo::before{background:var(--primary);}
+  .estado-inactivo::before,.estado-suspendido::before{background:var(--red);}
+  .empty-state{font-size:13px;color:var(--ink-faint);padding:40px 4px;text-align:center;}
+
+  .overlay{position:fixed;inset:0;background:rgba(14,42,34,.4);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:32px 20px;overflow-y:auto;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:var(--radius);padding:26px 28px;width:100%;max-width:460px;}
+  .modal.wide{max-width:720px;}
+  .modal h2{font-size:18px;margin-bottom:4px;}
+  .modal .sub{font-size:12.5px;color:var(--ink-faint);margin-bottom:20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  .field input, .field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+    font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--primary);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;}
+  .field-hint{font-size:11.5px;color:var(--ink-faint);margin-top:4px;}
+  .error-box{background:var(--red-tint);color:var(--red);font-size:12.5px;padding:9px 11px;border-radius:8px;margin-bottom:14px;display:none;}
+  .error-box.show{display:block;}
+  .ok-box{background:var(--primary-tint);color:var(--primary);font-size:12.5px;padding:9px 11px;border-radius:8px;margin-bottom:14px;display:none;}
+  .ok-box.show{display:block;}
+  .section-title{font-size:13px;font-weight:600;color:var(--primary-ink);margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--line);}
+  .mini-stat{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--surface-soft);}
+  .mini-table{font-size:12.5px;}
+  .mini-table td{padding:8px 6px;}
+  .tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line);}
+  .tab-btn{padding:9px 14px;font-size:13px;font-weight:500;color:var(--ink-faint);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;}
+  .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+
+  @media (max-width:768px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:fixed;left:0;top:0;width:230px;transform:translateX(-100%);transition:transform .2s ease;z-index:40;}
+    .sidebar.open{transform:translateX(0);box-shadow:20px 0 40px rgba(0,0,0,.15);}
+    .menu-toggle{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:9px;background:var(--surface);border:1px solid var(--line);}
+    .main{padding:16px 16px 50px;}
+    .vitals{grid-template-columns:1fr 1fr;}
+    table{font-size:12.5px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div>
+        <div class="brand-name">VetCloud</div>
+        <div class="brand-sub">Plataforma</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <div class="nav-label">Superadmin</div>
+        <a class="nav-item active" href="./superadmin.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+          Panel global
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">VetCloud · Panel global<br>v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting">
+          <div class="greeting-eyebrow">Plataforma</div>
+          <h1>Panel administrativo global</h1>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div>
+            <div class="name" id="userName">—</div>
+            <div class="role" id="userRole">—</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="vitals">
+      <div class="vital-card"><div class="tag">Clínicas</div><div class="value" id="kpiClinicas">—</div></div>
+      <div class="vital-card"><div class="tag">Usuarios activos</div><div class="value" id="kpiUsuarios">—</div></div>
+      <div class="vital-card"><div class="tag">Doctores</div><div class="value" id="kpiDoctores">—</div></div>
+      <div class="vital-card"><div class="tag">Citas hoy (todas)</div><div class="value" id="kpiCitasHoy">—</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Clínicas</h2>
+          <div class="sub">Selecciona una clínica para ver su flujo, equipo y actividad</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <input class="search-input" id="buscador" placeholder="Buscar clínica…" oninput="renderTabla()">
+          <button class="btn-primary" onclick="abrirModalNueva()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Nueva clínica
+          </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Clínica</th>
+            <th>Doctores</th>
+            <th>Asistentes</th>
+            <th>Clientes</th>
+            <th>Mascotas</th>
+            <th>Citas hoy</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tablaClinicas">
+          <tr><td colspan="8" class="empty-state">Cargando clínicas…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: nueva clínica -->
+<div class="overlay" id="overlayNueva">
+  <div class="modal wide">
+    <h2>Nueva clínica</h2>
+    <div class="sub">Crea la clínica y su usuario administrador inicial.</div>
+    <div class="error-box" id="errorNueva"></div>
+    <form id="formNueva">
+      <div class="field-row3">
+        <div class="field"><label>Nombre comercial</label><input type="text" id="n_nombre_comercial" required></div>
+        <div class="field"><label>Razón social</label><input type="text" id="n_razon_social" required></div>
+        <div class="field"><label>RUC</label><input type="text" id="n_ruc" required></div>
+      </div>
+      <div class="field-row3">
+        <div class="field"><label>Ciudad</label><input type="text" id="n_ciudad"></div>
+        <div class="field"><label>Provincia</label><input type="text" id="n_provincia"></div>
+        <div class="field">
+          <label>Zona horaria</label>
+          <select id="n_timezone">
+            <option value="America/Guayaquil">America/Guayaquil (Ecuador)</option>
+            <option value="America/Santiago">America/Santiago (Chile)</option>
+            <option value="America/Bogota">America/Bogota (Colombia)</option>
+            <option value="America/Lima">America/Lima (Perú)</option>
+            <option value="Europe/Madrid">Europe/Madrid (España)</option>
+            <option value="America/Mexico_City">America/Mexico_City (México)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Teléfono</label><input type="text" id="n_telefono"></div>
+        <div class="field"><label>Email de la clínica</label><input type="email" id="n_email"></div>
+      </div>
+
+      <div class="section-title">Usuario administrador de la clínica</div>
+      <div class="field-row">
+        <div class="field"><label>Nombres</label><input type="text" id="n_admin_nombres" required></div>
+        <div class="field"><label>Apellidos</label><input type="text" id="n_admin_apellidos" required></div>
+      </div>
+      <div class="field"><label>Correo del admin</label><input type="email" id="n_admin_email" required></div>
+      <div class="field">
+        <label>Contraseña temporal</label>
+        <input type="password" id="n_admin_password" required minlength="8">
+        <div class="field-hint">Mínimo 8 caracteres. Se pedirá cambiarla en el primer ingreso.</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalNueva()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarNueva">Crear clínica</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: detalle / editar clínica -->
+<div class="overlay" id="overlayDetalle">
+  <div class="modal wide">
+    <h2 id="detalleNombre">Clínica</h2>
+    <div class="sub" id="detalleSub">—</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="resumen" onclick="cambiarTab('resumen')">Resumen</button>
+      <button class="tab-btn" data-tab="equipo" onclick="cambiarTab('equipo')">Equipo</button>
+      <button class="tab-btn" data-tab="editar" onclick="cambiarTab('editar')">Editar</button>
+      <button class="tab-btn" data-tab="password" onclick="cambiarTab('password')">Contraseña admin</button>
+    </div>
+
+    <div class="tab-pane active" id="pane-resumen">
+      <div class="mini-stat"><span>Citas de hoy</span><strong id="r_citas_hoy">—</strong></div>
+      <div class="mini-stat"><span>Citas esta semana</span><strong id="r_citas_semana">—</strong></div>
+      <div class="mini-stat"><span>Citas atendidas (histórico)</span><strong id="r_citas_atendidas">—</strong></div>
+      <div class="mini-stat"><span>Facturas emitidas</span><strong id="r_facturas">—</strong></div>
+      <div class="section-title">Últimas citas</div>
+      <table class="mini-table" id="tablaUltimasCitas"><tbody></tbody></table>
+    </div>
+
+    <div class="tab-pane" id="pane-equipo">
+      <table class="mini-table" id="tablaEquipo"><tbody></tbody></table>
+    </div>
+
+    <div class="tab-pane" id="pane-editar">
+      <div class="error-box" id="errorEditar"></div>
+      <div class="ok-box" id="okEditar">Cambios guardados.</div>
+      <form id="formEditar">
+        <div class="field-row3">
+          <div class="field"><label>Nombre comercial</label><input type="text" id="e_nombre_comercial"></div>
+          <div class="field"><label>Razón social</label><input type="text" id="e_razon_social"></div>
+          <div class="field"><label>RUC</label><input type="text" id="e_ruc"></div>
+        </div>
+        <div class="field-row3">
+          <div class="field"><label>Ciudad</label><input type="text" id="e_ciudad"></div>
+          <div class="field"><label>Provincia</label><input type="text" id="e_provincia"></div>
+          <div class="field">
+            <label>Zona horaria</label>
+            <select id="e_timezone">
+              <option value="America/Guayaquil">America/Guayaquil (Ecuador)</option>
+              <option value="America/Santiago">America/Santiago (Chile)</option>
+              <option value="America/Bogota">America/Bogota (Colombia)</option>
+              <option value="America/Lima">America/Lima (Perú)</option>
+              <option value="Europe/Madrid">Europe/Madrid (España)</option>
+              <option value="America/Mexico_City">America/Mexico_City (México)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Teléfono</label><input type="text" id="e_telefono"></div>
+          <div class="field"><label>Email</label><input type="email" id="e_email"></div>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="e_estado">
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+            <option value="suspendido">Suspendido</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="cerrarModalDetalle()">Cerrar</button>
+          <button type="submit" class="btn-primary" id="btnGuardarEditar">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="tab-pane" id="pane-password">
+      <div class="error-box" id="errorPassword"></div>
+      <div class="ok-box" id="okPassword">Contraseña actualizada.</div>
+      <form id="formPassword">
+        <div class="field">
+          <label>Nueva contraseña para el admin de esta clínica</label>
+          <input type="password" id="p_password" required minlength="8">
+          <div class="field-hint">Se aplica al primer usuario con rol admin de la clínica. Mínimo 8 caracteres.</div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="cerrarModalDetalle()">Cerrar</button>
+          <button type="submit" class="btn-primary" id="btnGuardarPassword">Actualizar contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  if (usuario.rol !== 'superadmin') { window.location.href = './dashboard.html'; }
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = 'Superadmin';
+
+  let clinicas = [];
+  let tenantActual = null;
+
+  async function cargarClinicas() {
+    const tbody = document.getElementById('tablaClinicas');
+    try {
+      clinicas = await apiFetch('/superadmin/tenants');
+      document.getElementById('kpiClinicas').textContent = clinicas.length;
+      document.getElementById('kpiUsuarios').textContent = clinicas.reduce((a, c) => a + Number(c.usuarios_activos), 0);
+      document.getElementById('kpiDoctores').textContent = clinicas.reduce((a, c) => a + Number(c.doctores), 0);
+      document.getElementById('kpiCitasHoy').textContent = clinicas.reduce((a, c) => a + Number(c.citas_hoy), 0);
+      renderTabla();
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  function renderTabla() {
+    const tbody = document.getElementById('tablaClinicas');
+    const q = document.getElementById('buscador').value.trim().toLowerCase();
+    const filtradas = clinicas.filter(c => !q || c.nombre_comercial.toLowerCase().includes(q) || (c.ciudad || '').toLowerCase().includes(q));
+    if (!filtradas.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No se encontraron clínicas.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtradas.map(c => `
+      <tr onclick="abrirModalDetalle(${c.id})">
+        <td class="cell-clinic">
+          <div class="name">${c.nombre_comercial}</div>
+          <div class="meta">${[c.ciudad, c.provincia].filter(Boolean).join(', ') || '—'} · ${c.timezone}</div>
+        </td>
+        <td>${c.doctores}</td>
+        <td>${c.asistentes}</td>
+        <td>${c.clientes}</td>
+        <td>${c.mascotas}</td>
+        <td><span class="badge">${c.citas_hoy}</span></td>
+        <td><span class="estado-dot estado-${c.estado}">${c.estado.charAt(0).toUpperCase() + c.estado.slice(1)}</span></td>
+        <td><button class="btn-ghost" onclick="event.stopPropagation(); abrirModalDetalle(${c.id})">Ver</button></td>
+      </tr>`).join('');
+  }
+
+  // --- Nueva clínica ---
+  function abrirModalNueva() {
+    document.getElementById('formNueva').reset();
+    document.getElementById('errorNueva').classList.remove('show');
+    document.getElementById('overlayNueva').classList.add('open');
+  }
+  function cerrarModalNueva() { document.getElementById('overlayNueva').classList.remove('open'); }
+  document.getElementById('overlayNueva').addEventListener('click', (e) => { if (e.target.id === 'overlayNueva') cerrarModalNueva(); });
+
+  document.getElementById('formNueva').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorNueva');
+    const btn = document.getElementById('btnGuardarNueva');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      await apiFetch('/superadmin/tenants', {
+        method: 'POST',
+        body: JSON.stringify({
+          nombre_comercial: document.getElementById('n_nombre_comercial').value.trim(),
+          razon_social: document.getElementById('n_razon_social').value.trim(),
+          ruc: document.getElementById('n_ruc').value.trim(),
+          ciudad: document.getElementById('n_ciudad').value.trim() || null,
+          provincia: document.getElementById('n_provincia').value.trim() || null,
+          timezone: document.getElementById('n_timezone').value,
+          telefono: document.getElementById('n_telefono').value.trim() || null,
+          email: document.getElementById('n_email').value.trim() || null,
+          admin_nombres: document.getElementById('n_admin_nombres').value.trim(),
+          admin_apellidos: document.getElementById('n_admin_apellidos').value.trim(),
+          admin_email: document.getElementById('n_admin_email').value.trim(),
+          admin_password: document.getElementById('n_admin_password').value,
+        }),
+      });
+      cerrarModalNueva();
+      cargarClinicas();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear clínica';
+    }
+  });
+
+  // --- Detalle / editar / password ---
+  function cambiarTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `pane-${tab}`));
+  }
+
+  async function abrirModalDetalle(id) {
+    tenantActual = id;
+    cambiarTab('resumen');
+    document.getElementById('detalleNombre').textContent = 'Cargando…';
+    document.getElementById('overlayDetalle').classList.add('open');
+    try {
+      const data = await apiFetch(`/superadmin/tenants/${id}/resumen`);
+      const t = data.tenant;
+      document.getElementById('detalleNombre').textContent = t.nombre_comercial;
+      document.getElementById('detalleSub').textContent = `${t.razon_social} · RUC ${t.ruc} · ${t.timezone}`;
+
+      document.getElementById('r_citas_hoy').textContent = data.actividad.citas_hoy;
+      document.getElementById('r_citas_semana').textContent = data.actividad.citas_semana;
+      document.getElementById('r_citas_atendidas').textContent = data.actividad.citas_atendidas_total;
+      document.getElementById('r_facturas').textContent = data.actividad.facturas_total;
+      document.querySelector('#tablaUltimasCitas tbody').innerHTML = data.ultimas_citas.length
+        ? data.ultimas_citas.map(c => `<tr>
+            <td class="mono" style="color:var(--ink-faint);">${new Date(c.fecha_hora).toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'short' })}</td>
+            <td>${c.cliente_nombres} ${c.cliente_apellidos || ''} · ${c.mascota}</td>
+            <td>${c.estado}</td>
+          </tr>`).join('')
+        : '<tr><td class="empty-state">Sin citas registradas.</td></tr>';
+
+      document.querySelector('#tablaEquipo tbody').innerHTML = data.equipo.length
+        ? data.equipo.map(p => `<tr>
+            <td><div style="font-weight:500;">${p.nombres} ${p.apellidos}</div><div style="font-size:12px;color:var(--ink-faint);">${p.email}</div></td>
+            <td><span class="badge">${p.tipo_empleado}${p.especialidad ? ' · ' + p.especialidad : ''}</span></td>
+            <td><span class="estado-dot estado-${p.estado}">${p.estado}</span></td>
+          </tr>`).join('')
+        : '<tr><td class="empty-state">Esta clínica todavía no tiene personal registrado.</td></tr>';
+
+      // precargar formulario de edición
+      document.getElementById('e_nombre_comercial').value = t.nombre_comercial || '';
+      document.getElementById('e_razon_social').value = t.razon_social || '';
+      document.getElementById('e_ruc').value = t.ruc || '';
+      document.getElementById('e_ciudad').value = t.ciudad || '';
+      document.getElementById('e_provincia').value = t.provincia || '';
+      document.getElementById('e_timezone').value = t.timezone || 'America/Guayaquil';
+      document.getElementById('e_telefono').value = t.telefono || '';
+      document.getElementById('e_email').value = t.email || '';
+      document.getElementById('e_estado').value = t.estado || 'activo';
+      document.getElementById('errorEditar').classList.remove('show');
+      document.getElementById('okEditar').classList.remove('show');
+      document.getElementById('errorPassword').classList.remove('show');
+      document.getElementById('okPassword').classList.remove('show');
+      document.getElementById('formPassword').reset();
+    } catch (err) {
+      document.getElementById('detalleNombre').textContent = 'Error';
+      document.getElementById('detalleSub').textContent = err.message;
+    }
+  }
+  function cerrarModalDetalle() { document.getElementById('overlayDetalle').classList.remove('open'); }
+  document.getElementById('overlayDetalle').addEventListener('click', (e) => { if (e.target.id === 'overlayDetalle') cerrarModalDetalle(); });
+
+  document.getElementById('formEditar').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorEditar');
+    const okBox = document.getElementById('okEditar');
+    const btn = document.getElementById('btnGuardarEditar');
+    errorBox.classList.remove('show'); okBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      await apiFetch(`/superadmin/tenants/${tenantActual}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          nombre_comercial: document.getElementById('e_nombre_comercial').value.trim(),
+          razon_social: document.getElementById('e_razon_social').value.trim(),
+          ruc: document.getElementById('e_ruc').value.trim(),
+          ciudad: document.getElementById('e_ciudad').value.trim() || null,
+          provincia: document.getElementById('e_provincia').value.trim() || null,
+          timezone: document.getElementById('e_timezone').value,
+          telefono: document.getElementById('e_telefono').value.trim() || null,
+          email: document.getElementById('e_email').value.trim() || null,
+          estado: document.getElementById('e_estado').value,
+        }),
+      });
+      okBox.classList.add('show');
+      cargarClinicas();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar cambios';
+    }
+  });
+
+  document.getElementById('formPassword').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorPassword');
+    const okBox = document.getElementById('okPassword');
+    const btn = document.getElementById('btnGuardarPassword');
+    errorBox.classList.remove('show'); okBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Actualizando…';
+    try {
+      await apiFetch(`/superadmin/tenants/${tenantActual}/admin-password`, {
+        method: 'PATCH',
+        body: JSON.stringify({ password: document.getElementById('p_password').value }),
+      });
+      okBox.classList.add('show');
+      document.getElementById('formPassword').reset();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Actualizar contraseña';
+    }
+  });
+
+  cargarClinicas();
+</script>
+</body>
+</html>

@@ -90,8 +90,10 @@
 
 <script src="./shared/api.js"></script>
 <script>
-  // Si ya hay sesión activa, va directo al dashboard
-  if (getToken() && getUsuario()) window.location.href = './dashboard.html';
+  // Si ya hay sesión activa, va directo al panel correspondiente
+  if (getToken() && getUsuario()) {
+    window.location.href = getUsuario().rol === 'superadmin' ? './superadmin.html' : './dashboard.html';
+  }
 
   const form = document.getElementById('loginForm');
   const errorBox = document.getElementById('errorBox');
@@ -129,7 +131,7 @@
       if (!res.ok) throw new Error(body?.error?.message || 'No se pudo iniciar sesión');
 
       setSession(body.token, body.usuario);
-      window.location.href = './dashboard.html';
+      window.location.href = body.usuario.rol === 'superadmin' ? './superadmin.html' : './dashboard.html';
     } catch (err) {
       errorBox.textContent = err.message;
       errorBox.classList.add('show');
