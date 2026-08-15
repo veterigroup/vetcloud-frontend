@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Facturación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<link rel="stylesheet" href="./shared/panel.css">
+<style>
+  .cliente-result{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;}
+  .cliente-result:hover{background:var(--surface-soft);}
+  .cliente-result .sub{font-size:11.5px;color:var(--ink-faint);}
+  .selected-chip{display:flex;align-items:center;justify-content:space-between;background:var(--primary-tint);color:var(--primary-ink);padding:9px 12px;border-radius:8px;font-size:13.5px;}
+  .selected-chip button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:16px;line-height:1;}
+  .item-row{display:grid;grid-template-columns:1fr 90px 110px 90px 32px;gap:8px;align-items:center;margin-bottom:8px;}
+  .item-row input, .item-row select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;}
+  .item-remove{background:var(--red-tint);color:var(--red);border:none;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:15px;}
+  .items-head{display:grid;grid-template-columns:1fr 90px 110px 90px 32px;gap:8px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .totales{display:flex;justify-content:flex-end;gap:24px;margin-top:10px;font-size:13.5px;}
+  .totales b{font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div><div class="brand-name">VetCloud</div><div class="brand-sub" id="clinicName">Cargando…</div></div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item" href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor,secretaria,auxiliar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+          Historias clínicas
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Operación</div>
+        <a class="nav-item" href="./citas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Citas
+        </a>
+        <a class="nav-item" href="./inventario.html" data-roles="admin,contador,auxiliar,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          Inventario
+        </a>
+        <a class="nav-item" href="./proformas.html" data-roles="admin,contador,secretaria,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+          Proformas
+        </a>
+        <a class="nav-item active" href="./facturas.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
+          Facturación
+        </a>
+        <a class="nav-item" href="./caja.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item" href="./usuarios.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+        <a class="nav-item" href="./configuracion.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 8v4l3 2"/></svg>
+          Configuración
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting"><div class="greeting-eyebrow">Operación</div><h1>Facturación</h1></div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div><div class="name" id="userName">—</div><div class="role" id="userRole">—</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Facturas</h2>
+          <div class="sub">Las facturas se generan desde una proforma aprobada, en el módulo de Proformas</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Fecha</th><th>N.° secuencial</th><th>Cliente</th><th>Total</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="tablaFacturas">
+          <tr><td colspan="6" class="empty-state">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Cuentas por cobrar</h2>
+          <div class="sub">Facturas con saldo pendiente</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Cliente</th><th>Vence</th><th>Saldo pendiente</th></tr>
+        </thead>
+        <tbody id="tablaCxc">
+          <tr><td colspan="3" class="empty-state">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: detalle factura -->
+<div class="overlay" id="overlayDetalle">
+  <div class="modal modal-wide">
+    <h2 id="detTitulo">Factura</h2>
+    <div class="sub" id="detSub">—</div>
+    <div class="error-box" id="errorDetalle"></div>
+
+    <table class="mini-table" style="font-size:13px;">
+      <thead><tr><th style="text-align:left;">Descripción</th><th>Cant.</th><th>P. unit.</th><th>Subtotal</th></tr></thead>
+      <tbody id="tablaDetalleItems"></tbody>
+    </table>
+    <div class="totales" id="detTotales" style="display:flex;justify-content:flex-end;gap:24px;margin-top:10px;font-size:13.5px;"></div>
+
+    <div class="section-title" style="font-size:13px;font-weight:600;color:var(--primary-ink);margin:16px 0 10px;padding-top:12px;border-top:1px solid var(--line);">Pagos registrados</div>
+    <table class="mini-table" style="font-size:13px;">
+      <tbody id="tablaPagos"><tr><td class="empty-state">Sin pagos registrados.</td></tr></tbody>
+    </table>
+
+    <div id="bloqueRegistrarPago" style="margin-top:14px;">
+      <div class="field-row">
+        <div class="field"><label>Forma de pago</label><select id="pg_forma_pago_id"></select></div>
+        <div class="field"><label>Monto</label><input type="number" step="0.01" id="pg_monto"></div>
+      </div>
+      <div class="field"><label>Referencia (opcional)</label><input type="text" id="pg_referencia"></div>
+      <button type="button" class="btn-primary" onclick="registrarPago()">Registrar pago</button>
+    </div>
+
+    <div class="modal-actions" id="detAcciones">
+      <button type="button" class="btn-ghost" onclick="cerrarModal('overlayDetalle')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+  applyRoleNav(usuario.rol);
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  const ETIQUETAS_SRI = { emitida: 'Emitida', anulada: 'Anulada', pendiente: 'Pendiente' };
+
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if (e.target === ov) cerrarModal(ov.id); }));
+
+  let facturaActual = null;
+  let formasPagoCache = null;
+  async function cargarFormasPago() {
+    if (formasPagoCache) return formasPagoCache;
+    try { formasPagoCache = await apiFetch('/formas-pago'); } catch (err) { formasPagoCache = []; }
+    return formasPagoCache;
+  }
+
+  async function cargarFacturas() {
+    const tbody = document.getElementById('tablaFacturas');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Cargando…</td></tr>';
+    try {
+      const res = await apiFetch('/facturas?per_page=50');
+      const facturas = res.data;
+      if (!facturas.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No hay facturas registradas todavía.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = facturas.map(f => `
+        <tr onclick="verDetalle(${f.id})">
+          <td class="mono" style="color:var(--ink-faint);">${new Date(f.fecha_emision).toLocaleDateString('es-EC')}</td>
+          <td class="mono">${f.secuencial}</td>
+          <td>${f.nombres} ${f.apellidos}</td>
+          <td class="mono">$${Number(f.total).toFixed(2)}</td>
+          <td><span class="badge">${ETIQUETAS_SRI[f.estado_sri] || f.estado_sri}</span></td>
+          <td><button class="btn-ghost" onclick="event.stopPropagation(); verDetalle(${f.id})">Ver</button></td>
+        </tr>`).join('');
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  async function cargarCxc() {
+    const tbody = document.getElementById('tablaCxc');
+    try {
+      const rows = await apiFetch('/facturas/reportes/cuentas-por-cobrar');
+      tbody.innerHTML = rows.length
+        ? rows.map(r => `<tr>
+            <td>${r.nombres} ${r.apellidos}</td>
+            <td class="mono" style="color:var(--ink-faint);">${r.fecha_vencimiento ? new Date(r.fecha_vencimiento).toLocaleDateString('es-EC') : '—'}</td>
+            <td class="mono">$${Number(r.saldo_pendiente).toFixed(2)}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="3" class="empty-state">No hay cuentas por cobrar pendientes.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="3" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  async function verDetalle(id) {
+    document.getElementById('errorDetalle').classList.remove('show');
+    document.getElementById('detTitulo').textContent = 'Cargando…';
+    document.getElementById('overlayDetalle').classList.add('open');
+    try {
+      const f = await apiFetch(`/facturas/${id}`);
+      facturaActual = f;
+      document.getElementById('detTitulo').textContent = `Factura ${f.establecimiento}-${f.punto_emision}-${f.secuencial}`;
+      document.getElementById('detSub').textContent = `${new Date(f.fecha_emision).toLocaleDateString('es-EC')} · ${ETIQUETAS_SRI[f.estado_sri] || f.estado_sri}`;
+
+      document.getElementById('tablaDetalleItems').innerHTML = f.detalle.map(d => `
+        <tr><td>${d.descripcion}</td><td style="text-align:center;">${d.cantidad}</td><td class="mono">$${Number(d.precio_unitario).toFixed(2)}</td><td class="mono">$${Number(d.subtotal).toFixed(2)}</td></tr>`).join('');
+      document.getElementById('detTotales').innerHTML = `<span>Subtotal: <b class="mono">$${Number(f.subtotal_12).toFixed(2)}</b></span><span>IVA: <b class="mono">$${Number(f.iva_valor).toFixed(2)}</b></span><span>Total: <b class="mono">$${Number(f.total).toFixed(2)}</b></span>`;
+
+      document.getElementById('tablaPagos').innerHTML = f.pagos.length
+        ? f.pagos.map(p => `<tr><td>${new Date(p.fecha).toLocaleDateString('es-EC')}</td><td class="mono">$${Number(p.monto).toFixed(2)}</td><td>${p.referencia || '—'}</td></tr>`).join('')
+        : '<tr><td class="empty-state">Sin pagos registrados.</td></tr>';
+
+      const formas = await cargarFormasPago();
+      document.getElementById('pg_forma_pago_id').innerHTML = formas.map(fp => `<option value="${fp.id}">${fp.nombre}</option>`).join('');
+
+      const anulada = f.estado_sri === 'anulada';
+      document.getElementById('bloqueRegistrarPago').style.display = anulada ? 'none' : 'block';
+
+      const acciones = document.getElementById('detAcciones');
+      let botones = '<button type="button" class="btn-ghost" onclick="cerrarModal(\'overlayDetalle\')">Cerrar</button>';
+      if (!anulada) {
+        botones += `<button type="button" class="btn-ghost btn-danger" onclick="anularFactura(${f.id})">Anular factura</button>`;
+      }
+      acciones.innerHTML = botones;
+    } catch (err) {
+      document.getElementById('detTitulo').textContent = 'Error';
+      document.getElementById('detSub').textContent = err.message;
+    }
+  }
+
+  async function registrarPago() {
+    const errorBox = document.getElementById('errorDetalle');
+    errorBox.classList.remove('show');
+    const monto = Number(document.getElementById('pg_monto').value);
+    if (!monto || monto <= 0) { errorBox.textContent = 'Ingresa un monto válido.'; errorBox.classList.add('show'); return; }
+    try {
+      await apiFetch(`/facturas/${facturaActual.id}/pagos`, {
+        method: 'POST',
+        body: JSON.stringify({
+          forma_pago_id: document.getElementById('pg_forma_pago_id').value,
+          monto,
+          referencia: document.getElementById('pg_referencia').value.trim() || null,
+          empleado_id: usuario.empleadoId || null,
+        }),
+      });
+      document.getElementById('pg_monto').value = '';
+      document.getElementById('pg_referencia').value = '';
+      verDetalle(facturaActual.id);
+      cargarCxc();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    }
+  }
+
+  async function anularFactura(id) {
+    if (!confirm('¿Anular esta factura? Esta acción no se puede deshacer.')) return;
+    try {
+      await apiFetch(`/facturas/${id}/anular`, { method: 'POST' });
+      cerrarModal('overlayDetalle');
+      cargarFacturas();
+      cargarCxc();
+    } catch (err) {
+      document.getElementById('errorDetalle').textContent = err.message;
+      document.getElementById('errorDetalle').classList.add('show');
+    }
+  }
+
+  cargarFacturas();
+  cargarCxc();
+</script>
+</body>
+</html>

@@ -79,15 +79,15 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
           Inventario
         </a>
-        <a class="nav-item " href="#" data-roles="admin,contador,secretaria">
+        <a class="nav-item " href="./proformas.html" data-roles="admin,contador,secretaria">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
           Proformas
         </a>
-        <a class="nav-item " href="#" data-roles="admin,contador">
+        <a class="nav-item " href="./facturas.html" data-roles="admin,contador">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
           Facturación
         </a>
-        <a class="nav-item " href="#" data-roles="admin,contador">
+        <a class="nav-item " href="./caja.html" data-roles="admin,contador">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
           Caja chica
         </a>
@@ -359,7 +359,7 @@
 
   async function cargarDoctores() {
     if (doctores.length) return doctores;
-    doctores = await apiFetch('/doctores');
+    doctores = await apiFetch('/catalogos/doctores');
     return doctores;
   }
   function opcionesDoctores() {
@@ -435,15 +435,9 @@
   // --- Nueva consulta ---
   async function abrirModalConsulta() {
     document.getElementById('errorConsulta').classList.remove('show');
+    await cargarDoctores();
+    document.getElementById('c_doctor_id').innerHTML = opcionesDoctores();
     document.getElementById('overlayConsulta').classList.add('open');
-    try {
-      await cargarDoctores();
-      document.getElementById('c_doctor_id').innerHTML = opcionesDoctores();
-    } catch (err) {
-      const errorBox = document.getElementById('errorConsulta');
-      errorBox.textContent = 'No se pudo cargar la lista de doctores: ' + err.message;
-      errorBox.classList.add('show');
-    }
   }
   manejarSubmit({
     formId: 'formConsulta', btnId: 'btnConsulta', errorId: 'errorConsulta', overlayId: 'overlayConsulta',
@@ -470,21 +464,15 @@
   // --- Aplicar tratamiento ---
   async function abrirModalTratamiento() {
     document.getElementById('errorTratamiento').classList.remove('show');
-    document.getElementById('overlayTratamiento').classList.add('open');
-    try {
-      await cargarDoctores();
-      if (!tratamientosCatalogo.length) {
-        const res = await apiFetch('/tratamientos?per_page=100');
-        tratamientosCatalogo = res.data;
-      }
-      document.getElementById('t_tratamiento_id').innerHTML = tratamientosCatalogo
-        .map(t => `<option value="${t.id}">${t.nombre}${t.categoria ? ' · ' + t.categoria : ''}</option>`).join('');
-      document.getElementById('t_empleado_id').innerHTML = opcionesDoctores();
-    } catch (err) {
-      const errorBox = document.getElementById('errorTratamiento');
-      errorBox.textContent = 'No se pudo cargar el catálogo: ' + err.message;
-      errorBox.classList.add('show');
+    await cargarDoctores();
+    if (!tratamientosCatalogo.length) {
+      const res = await apiFetch('/catalogos/tratamientos?per_page=100');
+      tratamientosCatalogo = res.data;
     }
+    document.getElementById('t_tratamiento_id').innerHTML = tratamientosCatalogo
+      .map(t => `<option value="${t.id}">${t.nombre}${t.categoria ? ' · ' + t.categoria : ''}</option>`).join('');
+    document.getElementById('t_empleado_id').innerHTML = opcionesDoctores();
+    document.getElementById('overlayTratamiento').classList.add('open');
   }
   manejarSubmit({
     formId: 'formTratamiento', btnId: 'btnTratamiento', errorId: 'errorTratamiento', overlayId: 'overlayTratamiento',
@@ -503,22 +491,16 @@
   // --- Aplicar vacuna ---
   async function abrirModalVacuna() {
     document.getElementById('errorVacuna').classList.remove('show');
+    await cargarDoctores();
+    if (!vacunasCatalogo.length) {
+      const res = await apiFetch('/catalogos/vacunas?per_page=100');
+      vacunasCatalogo = res.data;
+    }
+    document.getElementById('v_vacuna_id').innerHTML = vacunasCatalogo
+      .map(v => `<option value="${v.id}">${v.nombre}${v.fabricante ? ' · ' + v.fabricante : ''}</option>`).join('');
+    document.getElementById('v_empleado_id').innerHTML = opcionesDoctores();
     document.getElementById('v_fecha').value = new Date().toISOString().slice(0, 10);
     document.getElementById('overlayVacuna').classList.add('open');
-    try {
-      await cargarDoctores();
-      if (!vacunasCatalogo.length) {
-        const res = await apiFetch('/vacunas?per_page=100');
-        vacunasCatalogo = res.data;
-      }
-      document.getElementById('v_vacuna_id').innerHTML = vacunasCatalogo
-        .map(v => `<option value="${v.id}">${v.nombre}${v.fabricante ? ' · ' + v.fabricante : ''}</option>`).join('');
-      document.getElementById('v_empleado_id').innerHTML = opcionesDoctores();
-    } catch (err) {
-      const errorBox = document.getElementById('errorVacuna');
-      errorBox.textContent = 'No se pudo cargar el catálogo: ' + err.message;
-      errorBox.classList.add('show');
-    }
   }
   manejarSubmit({
     formId: 'formVacuna', btnId: 'btnVacuna', errorId: 'errorVacuna', overlayId: 'overlayVacuna',

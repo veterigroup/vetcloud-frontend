@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Caja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<link rel="stylesheet" href="./shared/panel.css">
+<style>
+  .cliente-result{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;}
+  .cliente-result:hover{background:var(--surface-soft);}
+  .cliente-result .sub{font-size:11.5px;color:var(--ink-faint);}
+  .selected-chip{display:flex;align-items:center;justify-content:space-between;background:var(--primary-tint);color:var(--primary-ink);padding:9px 12px;border-radius:8px;font-size:13.5px;}
+  .selected-chip button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:16px;line-height:1;}
+  .item-row{display:grid;grid-template-columns:1fr 90px 110px 90px 32px;gap:8px;align-items:center;margin-bottom:8px;}
+  .item-row input, .item-row select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;}
+  .item-remove{background:var(--red-tint);color:var(--red);border:none;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:15px;}
+  .items-head{display:grid;grid-template-columns:1fr 90px 110px 90px 32px;gap:8px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .totales{display:flex;justify-content:flex-end;gap:24px;margin-top:10px;font-size:13.5px;}
+  .totales b{font-family:'IBM Plex Mono',monospace;}
+  .mini-stat{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--surface-soft);max-width:360px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div><div class="brand-name">VetCloud</div><div class="brand-sub" id="clinicName">Cargando…</div></div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item" href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor,secretaria,auxiliar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+          Historias clínicas
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Operación</div>
+        <a class="nav-item" href="./citas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Citas
+        </a>
+        <a class="nav-item" href="./inventario.html" data-roles="admin,contador,auxiliar,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          Inventario
+        </a>
+        <a class="nav-item" href="./proformas.html" data-roles="admin,contador,secretaria,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+          Proformas
+        </a>
+        <a class="nav-item" href="./facturas.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
+          Facturación
+        </a>
+        <a class="nav-item active" href="./caja.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+        <a class="nav-item" href="./caja.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item" href="./usuarios.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+        <a class="nav-item" href="./configuracion.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 8v4l3 2"/></svg>
+          Configuración
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting"><div class="greeting-eyebrow">Operación</div><h1>Caja</h1></div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div><div class="name" id="userName">—</div><div class="role" id="userRole">—</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Caja diaria</h2>
+          <div class="sub">Apertura y cierre del día</div>
+        </div>
+        <div id="accionesCajaDiaria"></div>
+      </div>
+      <div id="estadoCajaDiaria" class="empty-state">Cargando…</div>
+
+      <div class="section-title" style="font-size:13px;font-weight:600;color:var(--primary-ink);margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--line);">Historial reciente</div>
+      <table>
+        <thead><tr><th>Apertura</th><th>Cierre</th><th>Monto inicial</th><th>Monto final</th><th>Responsable</th><th>Estado</th></tr></thead>
+        <tbody id="tablaHistorialCaja"><tr><td colspan="6" class="empty-state">Cargando…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Caja chica</h2>
+          <div class="sub">Fondos fijos para gastos menores</div>
+        </div>
+        <button class="btn-primary" onclick="abrirModalFondo()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo fondo
+        </button>
+      </div>
+      <table>
+        <thead><tr><th>Fondo</th><th>Asignado</th><th>Saldo actual</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="tablaFondos"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: apertura de caja -->
+<div class="overlay" id="overlayApertura">
+  <div class="modal">
+    <h2>Abrir caja</h2>
+    <div class="sub">Registra el monto inicial con el que arrancas el día.</div>
+    <div class="error-box" id="errorApertura"></div>
+    <form id="formApertura">
+      <div class="field"><label>Responsable</label><select id="ap_empleado_id" required></select></div>
+      <div class="field"><label>Monto inicial</label><input type="number" step="0.01" id="ap_monto" value="0" required></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayApertura')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnApertura">Abrir caja</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: cierre de caja -->
+<div class="overlay" id="overlayCierre">
+  <div class="modal">
+    <h2>Cerrar caja</h2>
+    <div class="sub">Registra el monto final contado.</div>
+    <div class="error-box" id="errorCierre"></div>
+    <form id="formCierre">
+      <div class="field"><label>Monto final</label><input type="number" step="0.01" id="ci_monto" required></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayCierre')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnCierre">Cerrar caja</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: nuevo fondo -->
+<div class="overlay" id="overlayFondo">
+  <div class="modal">
+    <h2>Nuevo fondo de caja chica</h2>
+    <div class="error-box" id="errorFondo"></div>
+    <form id="formFondo">
+      <div class="field"><label>Nombre del fondo</label><input type="text" id="f_nombre" placeholder="Ej. Caja chica recepción" required></div>
+      <div class="field"><label>Monto asignado</label><input type="number" step="0.01" id="f_monto" required></div>
+      <div class="field"><label>Responsable (opcional)</label><select id="f_responsable_id"><option value="">Sin asignar</option></select></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayFondo')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnFondo">Crear fondo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: detalle de fondo + movimientos -->
+<div class="overlay" id="overlayMovimientos">
+  <div class="modal modal-wide">
+    <h2 id="movTitulo">Fondo</h2>
+    <div class="sub" id="movSub">—</div>
+    <div class="error-box" id="errorMovimiento"></div>
+
+    <table class="mini-table" style="font-size:13px;">
+      <thead><tr><th style="text-align:left;">Fecha</th><th>Tipo</th><th>Concepto</th><th>Monto</th></tr></thead>
+      <tbody id="tablaMovimientos"></tbody>
+    </table>
+
+    <div class="section-title" style="font-size:13px;font-weight:600;color:var(--primary-ink);margin:16px 0 10px;padding-top:12px;border-top:1px solid var(--line);">Nuevo movimiento</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Tipo</label>
+        <select id="mv_tipo">
+          <option value="gasto">Gasto</option>
+          <option value="reposicion">Reposición</option>
+        </select>
+      </div>
+      <div class="field"><label>Monto</label><input type="number" step="0.01" id="mv_monto"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Categoría (si es gasto)</label><input type="text" id="mv_categoria" placeholder="Ej. Insumos de limpieza"></div>
+      <div class="field"><label>Responsable</label><select id="mv_empleado_id"></select></div>
+    </div>
+    <div class="field"><label>Concepto</label><input type="text" id="mv_concepto" required></div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" onclick="cerrarModal('overlayMovimientos')">Cerrar</button>
+      <button type="button" class="btn-primary" id="btnMovimiento" onclick="registrarMovimiento()">Registrar movimiento</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+  applyRoleNav(usuario.rol);
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if (e.target === ov) cerrarModal(ov.id); }));
+
+  let doctoresCache = null;
+  async function cargarDoctores() {
+    if (doctoresCache) return doctoresCache;
+    try { doctoresCache = await apiFetch('/doctores'); } catch (err) { doctoresCache = []; }
+    return doctoresCache;
+  }
+  function opcionesDoctores() {
+    return doctoresCache.map(d => `<option value="${d.id}">${d.nombres} ${d.apellidos}</option>`).join('');
+  }
+
+  // --- Caja diaria ---
+  let cajaActual = null;
+  async function cargarCajaDiaria() {
+    const estado = document.getElementById('estadoCajaDiaria');
+    const acciones = document.getElementById('accionesCajaDiaria');
+    try {
+      cajaActual = await apiFetch('/caja/actual');
+      if (cajaActual) {
+        estado.className = '';
+        estado.innerHTML = `
+          <div class="mini-stat"><span>Estado</span><strong><span class="estado-dot estado-activo">Abierta</span></strong></div>
+          <div class="mini-stat"><span>Apertura</span><strong>${new Date(cajaActual.fecha_apertura).toLocaleString('es-EC')}</strong></div>
+          <div class="mini-stat"><span>Monto inicial</span><strong class="mono">$${Number(cajaActual.monto_inicial).toFixed(2)}</strong></div>`;
+        acciones.innerHTML = '<button class="btn-primary" onclick="abrirModalCierre()">Cerrar caja</button>';
+      } else {
+        estado.className = 'empty-state';
+        estado.textContent = 'No hay una caja abierta en este momento.';
+        acciones.innerHTML = '<button class="btn-primary" onclick="abrirModalApertura()">Abrir caja</button>';
+      }
+    } catch (err) {
+      estado.className = 'empty-state';
+      estado.textContent = err.message;
+    }
+  }
+
+  async function cargarHistorialCaja() {
+    const tbody = document.getElementById('tablaHistorialCaja');
+    try {
+      const historial = await apiFetch('/caja/historial');
+      tbody.innerHTML = historial.length
+        ? historial.map(c => `<tr>
+            <td class="mono" style="color:var(--ink-faint);">${new Date(c.fecha_apertura).toLocaleString('es-EC')}</td>
+            <td class="mono" style="color:var(--ink-faint);">${c.fecha_cierre ? new Date(c.fecha_cierre).toLocaleString('es-EC') : '—'}</td>
+            <td class="mono">$${Number(c.monto_inicial).toFixed(2)}</td>
+            <td class="mono">${c.monto_final !== null ? '$' + Number(c.monto_final).toFixed(2) : '—'}</td>
+            <td>${c.empleado_nombres ? c.empleado_nombres + ' ' + c.empleado_apellidos : '—'}</td>
+            <td><span class="badge">${c.estado === 'abierta' ? 'Abierta' : 'Cerrada'}</span></td>
+          </tr>`).join('')
+        : '<tr><td colspan="6" class="empty-state">Sin historial todavía.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  async function abrirModalApertura() {
+    document.getElementById('errorApertura').classList.remove('show');
+    document.getElementById('formApertura').reset();
+    await cargarDoctores();
+    document.getElementById('ap_empleado_id').innerHTML = opcionesDoctores();
+    document.getElementById('overlayApertura').classList.add('open');
+  }
+  document.getElementById('formApertura').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorApertura');
+    const btn = document.getElementById('btnApertura');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Abriendo…';
+    try {
+      await apiFetch('/caja/apertura', {
+        method: 'POST',
+        body: JSON.stringify({
+          empleado_id: document.getElementById('ap_empleado_id').value,
+          monto_inicial: Number(document.getElementById('ap_monto').value) || 0,
+        }),
+      });
+      cerrarModal('overlayApertura');
+      cargarCajaDiaria();
+      cargarHistorialCaja();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Abrir caja';
+    }
+  });
+
+  function abrirModalCierre() {
+    document.getElementById('errorCierre').classList.remove('show');
+    document.getElementById('formCierre').reset();
+    document.getElementById('overlayCierre').classList.add('open');
+  }
+  document.getElementById('formCierre').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorCierre');
+    const btn = document.getElementById('btnCierre');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Cerrando…';
+    try {
+      await apiFetch('/caja/cierre', {
+        method: 'POST',
+        body: JSON.stringify({ caja_id: cajaActual.id, monto_final: Number(document.getElementById('ci_monto').value) }),
+      });
+      cerrarModal('overlayCierre');
+      cargarCajaDiaria();
+      cargarHistorialCaja();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Cerrar caja';
+    }
+  });
+
+  // --- Caja chica: fondos ---
+  async function cargarFondos() {
+    const tbody = document.getElementById('tablaFondos');
+    try {
+      const fondos = await apiFetch('/caja-chica/fondos');
+      tbody.innerHTML = fondos.length
+        ? fondos.map(f => `<tr onclick="abrirModalMovimientos(${f.id}, '${f.nombre.replace(/'/g, "\\'")}')">
+            <td style="font-weight:500;">${f.nombre}</td>
+            <td class="mono">$${Number(f.monto_asignado).toFixed(2)}</td>
+            <td class="mono">$${Number(f.saldo_actual).toFixed(2)}</td>
+            <td><span class="estado-dot estado-${f.estado === 'activo' ? 'activo' : 'inactivo'}">${f.estado}</span></td>
+            <td><button class="btn-ghost" onclick="event.stopPropagation(); abrirModalMovimientos(${f.id}, '${f.nombre.replace(/'/g, "\\'")}')">Ver</button></td>
+          </tr>`).join('')
+        : '<tr><td colspan="5" class="empty-state">Todavía no hay fondos de caja chica creados.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  async function abrirModalFondo() {
+    document.getElementById('errorFondo').classList.remove('show');
+    document.getElementById('formFondo').reset();
+    await cargarDoctores();
+    document.getElementById('f_responsable_id').innerHTML = '<option value="">Sin asignar</option>' + opcionesDoctores();
+    document.getElementById('overlayFondo').classList.add('open');
+  }
+  document.getElementById('formFondo').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorFondo');
+    const btn = document.getElementById('btnFondo');
+    errorBox.classList.remove('show');
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      await apiFetch('/caja-chica/fondos', {
+        method: 'POST',
+        body: JSON.stringify({
+          nombre: document.getElementById('f_nombre').value.trim(),
+          monto_asignado: Number(document.getElementById('f_monto').value),
+          responsable_id: document.getElementById('f_responsable_id').value || null,
+        }),
+      });
+      cerrarModal('overlayFondo');
+      cargarFondos();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear fondo';
+    }
+  });
+
+  // --- Movimientos de un fondo ---
+  let fondoActualId = null;
+  const ETIQUETAS_MOV = { gasto: 'Gasto', reposicion: 'Reposición' };
+
+  async function abrirModalMovimientos(id, nombre) {
+    fondoActualId = id;
+    document.getElementById('errorMovimiento').classList.remove('show');
+    document.getElementById('movTitulo').textContent = nombre;
+    document.getElementById('movSub').textContent = 'Historial de gastos y reposiciones';
+    document.getElementById('mv_categoria').value = '';
+    document.getElementById('mv_concepto').value = '';
+    document.getElementById('mv_monto').value = '';
+    document.getElementById('overlayMovimientos').classList.add('open');
+    await cargarDoctores();
+    document.getElementById('mv_empleado_id').innerHTML = opcionesDoctores();
+    await cargarMovimientos();
+  }
+
+  async function cargarMovimientos() {
+    const tbody = document.getElementById('tablaMovimientos');
+    tbody.innerHTML = '<tr><td class="empty-state">Cargando…</td></tr>';
+    try {
+      const movs = await apiFetch(`/caja-chica/${fondoActualId}/movimientos`);
+      tbody.innerHTML = movs.length
+        ? movs.map(m => `<tr>
+            <td class="mono" style="color:var(--ink-faint);">${new Date(m.fecha).toLocaleDateString('es-EC')}</td>
+            <td>${ETIQUETAS_MOV[m.tipo_movimiento] || m.tipo_movimiento}</td>
+            <td>${m.concepto}</td>
+            <td class="mono" style="color:${m.tipo_movimiento === 'gasto' ? 'var(--red)' : 'var(--primary)'};">${m.tipo_movimiento === 'gasto' ? '-' : '+'}$${Number(m.monto).toFixed(2)}</td>
+          </tr>`).join('')
+        : '<tr><td class="empty-state">Sin movimientos todavía.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  async function registrarMovimiento() {
+    const errorBox = document.getElementById('errorMovimiento');
+    errorBox.classList.remove('show');
+    const monto = Number(document.getElementById('mv_monto').value);
+    const concepto = document.getElementById('mv_concepto').value.trim();
+    if (!monto || monto <= 0) { errorBox.textContent = 'Ingresa un monto válido.'; errorBox.classList.add('show'); return; }
+    if (!concepto) { errorBox.textContent = 'Ingresa un concepto.'; errorBox.classList.add('show'); return; }
+    const btn = document.getElementById('btnMovimiento');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      await apiFetch(`/caja-chica/${fondoActualId}/movimientos`, {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo_movimiento: document.getElementById('mv_tipo').value,
+          categoria_gasto: document.getElementById('mv_categoria').value.trim() || null,
+          concepto,
+          monto,
+          empleado_id: document.getElementById('mv_empleado_id').value || null,
+        }),
+      });
+      document.getElementById('mv_monto').value = '';
+      document.getElementById('mv_concepto').value = '';
+      document.getElementById('mv_categoria').value = '';
+      await cargarMovimientos();
+      await cargarFondos();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Registrar movimiento';
+    }
+  }
+
+  cargarCajaDiaria();
+  cargarHistorialCaja();
+  cargarFondos();
+</script>
+</body>
+</html>

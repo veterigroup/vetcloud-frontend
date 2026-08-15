@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetCloud — Proformas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="./shared/api.js"></script>
+<link rel="stylesheet" href="./shared/panel.css">
+<style>
+  .cliente-result{padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;}
+  .cliente-result:hover{background:var(--surface-soft);}
+  .cliente-result .sub{font-size:11.5px;color:var(--ink-faint);}
+  .selected-chip{display:flex;align-items:center;justify-content:space-between;background:var(--primary-tint);color:var(--primary-ink);padding:9px 12px;border-radius:8px;font-size:13.5px;}
+  .selected-chip button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:16px;line-height:1;}
+  .item-row{display:grid;grid-template-columns:1fr 90px 110px 90px 32px;gap:8px;align-items:center;margin-bottom:8px;}
+  .item-row input, .item-row select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;}
+  .item-remove{background:var(--red-tint);color:var(--red);border:none;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:15px;}
+  .items-head{display:grid;grid-template-columns:1fr 90px 110px 90px 32px;gap:8px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .totales{display:flex;justify-content:flex-end;gap:24px;margin-top:10px;font-size:13.5px;}
+  .totales b{font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">V</div>
+      <div><div class="brand-name">VetCloud</div><div class="brand-sub" id="clinicName">Cargando…</div></div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <a class="nav-item" href="./dashboard.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" href="./clientes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/></svg>
+          Clientes
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor,secretaria,auxiliar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21Z"/></svg>
+          Mascotas
+        </a>
+        <a class="nav-item" href="./mascotas.html" data-roles="admin,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2v4M15 2v4M4 8h16M6 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>
+          Historias clínicas
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Operación</div>
+        <a class="nav-item" href="./citas.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Citas
+        </a>
+        <a class="nav-item" href="./inventario.html" data-roles="admin,contador,auxiliar,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+          Inventario
+        </a>
+        <a class="nav-item active" href="./proformas.html" data-roles="admin,contador,secretaria,doctor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+          Proformas
+        </a>
+        <a class="nav-item" href="./facturas.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M6 15h4M3 6h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/></svg>
+          Facturación
+        </a>
+        <a class="nav-item" href="./caja.html" data-roles="admin,contador,secretaria">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h3"/></svg>
+          Caja chica
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item" href="./usuarios.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M4 12h2m12 0h2M12 4v2m0 12v2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6"/></svg>
+          Usuarios y roles
+        </a>
+        <a class="nav-item" href="./configuracion.html" data-roles="admin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 8v4l3 2"/></svg>
+          Configuración
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-foot">Ambiente SRI: pruebas<br>Plan Pro · v1.0</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="greeting"><div class="greeting-eyebrow">Operación</div><h1>Proformas</h1></div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">--</div>
+          <div><div class="name" id="userName">—</div><div class="role" id="userRole">—</div></div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Proformas</h2>
+          <div class="sub">Cotizaciones para clientes — apruébalas y conviértelas en factura</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <select id="filtroEstado" onchange="cargarProformas()" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="aprobada">Aprobada</option>
+            <option value="rechazada">Rechazada</option>
+            <option value="facturada">Facturada</option>
+          </select>
+          <button class="btn-primary" onclick="abrirModalProforma()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Nueva proforma
+          </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Fecha</th><th>Cliente / mascota</th><th>Total</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="tablaProformas">
+          <tr><td colspan="5" class="empty-state">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: nueva proforma -->
+<div class="overlay" id="overlayProforma">
+  <div class="modal modal-wide">
+    <h2>Nueva proforma</h2>
+    <div class="sub">Busca al cliente, elige la mascota y agrega ítems.</div>
+    <div class="error-box" id="errorProforma"></div>
+
+    <form id="formProforma">
+      <div class="field" id="bloqueBuscarCliente">
+        <label>Cliente</label>
+        <input type="text" id="buscarCliente" placeholder="Escribe nombre, apellido o cédula…" autocomplete="off">
+        <div id="resultadosCliente" style="margin-top:6px;max-height:160px;overflow:auto;"></div>
+      </div>
+      <div class="field" id="bloqueClienteSeleccionado" style="display:none;">
+        <label>Cliente</label>
+        <div class="selected-chip">
+          <span id="nombreClienteSel"></span>
+          <button type="button" onclick="quitarCliente()" title="Cambiar cliente">✕</button>
+        </div>
+      </div>
+
+      <div class="field" id="bloqueMascota" style="display:none;">
+        <label>Mascota</label>
+        <select id="p_mascota_id" required></select>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Vigente hasta</label><input type="date" id="p_fecha_validez"></div>
+        <div class="field"><label>Atendido por</label><select id="p_empleado_id"><option value="">Sin asignar</option></select></div>
+      </div>
+
+      <div class="section-title" style="font-size:13px;font-weight:600;color:var(--primary-ink);margin:16px 0 10px;padding-top:12px;border-top:1px solid var(--line);">Ítems</div>
+      <div class="items-head"><span>Descripción</span><span>Cant.</span><span>P. unit.</span><span>Desc.</span><span></span></div>
+      <div id="itemsProforma"></div>
+      <button type="button" class="btn-ghost" onclick="agregarItem()" style="margin-top:4px;">+ Agregar ítem</button>
+
+      <div class="totales">
+        <span>Subtotal: <b id="totalSubtotal">$0.00</b></span>
+        <span>IVA 15%: <b id="totalIva">$0.00</b></span>
+        <span>Total: <b id="totalTotal">$0.00</b></span>
+      </div>
+
+      <div class="field" style="margin-top:14px;"><label>Observaciones</label><textarea id="p_observaciones" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px;min-height:56px;"></textarea></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal('overlayProforma')">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarProforma">Crear proforma</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: detalle proforma -->
+<div class="overlay" id="overlayDetalle">
+  <div class="modal modal-wide">
+    <h2 id="detTitulo">Proforma</h2>
+    <div class="sub" id="detSub">—</div>
+    <div class="error-box" id="errorDetalle"></div>
+    <table class="mini-table" style="font-size:13px;">
+      <thead><tr><th style="text-align:left;">Descripción</th><th>Cant.</th><th>P. unit.</th><th>Subtotal</th></tr></thead>
+      <tbody id="tablaDetalleItems"></tbody>
+    </table>
+    <div class="totales" id="detTotales"></div>
+    <div class="modal-actions" id="detAcciones"></div>
+  </div>
+</div>
+
+<script>
+  const usuario = requireAuth();
+  document.getElementById('userAvatar').textContent = iniciales(usuario.nombres, usuario.apellidos);
+  document.getElementById('userName').textContent = `${usuario.nombres} ${usuario.apellidos}`;
+  document.getElementById('userRole').textContent = ETIQUETAS_ROL[usuario.rol] || usuario.rol;
+  applyRoleNav(usuario.rol);
+  apiFetch('/auth/me').then(me => { document.getElementById('clinicName').textContent = me.nombre_comercial; }).catch(()=>{});
+
+  const ETIQUETAS_ESTADO_P = { pendiente: 'Pendiente', aprobada: 'Aprobada', rechazada: 'Rechazada', facturada: 'Facturada' };
+
+  function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', (e) => { if (e.target === ov) cerrarModal(ov.id); }));
+
+  let proformas = [];
+  async function cargarProformas() {
+    const tbody = document.getElementById('tablaProformas');
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Cargando…</td></tr>';
+    try {
+      const estado = document.getElementById('filtroEstado').value;
+      proformas = await apiFetch(`/proformas${estado ? '?estado=' + estado : ''}`);
+      if (!proformas.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay proformas registradas.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = proformas.map(p => `
+        <tr onclick="verDetalle(${p.id})">
+          <td class="mono" style="color:var(--ink-faint);">${new Date(p.fecha_emision).toLocaleDateString('es-EC')}</td>
+          <td><div style="font-weight:500;">${p.cliente_nombres} ${p.cliente_apellidos}</div><div style="font-size:12px;color:var(--ink-faint);">${p.mascota}</div></td>
+          <td class="mono">$${Number(p.total).toFixed(2)}</td>
+          <td><span class="badge">${ETIQUETAS_ESTADO_P[p.estado] || p.estado}</span></td>
+          <td><button class="btn-ghost" onclick="event.stopPropagation(); verDetalle(${p.id})">Ver</button></td>
+        </tr>`).join('');
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  // --- Nueva proforma ---
+  let clienteSeleccionado = null;
+  let doctoresCache = null;
+  async function cargarDoctores() {
+    if (doctoresCache) return doctoresCache;
+    try {
+      doctoresCache = await apiFetch('/doctores');
+      const sel = document.getElementById('p_empleado_id');
+      doctoresCache.forEach(d => sel.insertAdjacentHTML('beforeend', `<option value="${d.id}">${d.nombres} ${d.apellidos}</option>`));
+    } catch (err) { doctoresCache = []; }
+    return doctoresCache;
+  }
+
+  function abrirModalProforma() {
+    document.getElementById('formProforma').reset();
+    document.getElementById('errorProforma').classList.remove('show');
+    document.getElementById('itemsProforma').innerHTML = '';
+    quitarCliente();
+    cargarDoctores();
+    agregarItem();
+    document.getElementById('overlayProforma').classList.add('open');
+  }
+
+  let buscarClienteTimeout;
+  document.getElementById('buscarCliente').addEventListener('input', (e) => {
+    clearTimeout(buscarClienteTimeout);
+    const q = e.target.value.trim();
+    const resultados = document.getElementById('resultadosCliente');
+    if (q.length < 2) { resultados.innerHTML = ''; return; }
+    buscarClienteTimeout = setTimeout(async () => {
+      try {
+        const { data } = await apiFetch(`/clientes?search=${encodeURIComponent(q)}&per_page=6`);
+        resultados.innerHTML = data.map(c => `
+          <div class="cliente-result" onclick='seleccionarCliente(${JSON.stringify(c)})'>
+            <div>${c.nombres} ${c.apellidos}</div>
+            <div class="sub">${c.numero_identificacion || ''} ${c.telefono ? '· ' + c.telefono : ''}</div>
+          </div>`).join('') || '<div class="empty-state" style="padding:8px;">Sin resultados</div>';
+      } catch (err) { resultados.innerHTML = ''; }
+    }, 300);
+  });
+
+  async function seleccionarCliente(cliente) {
+    clienteSeleccionado = cliente;
+    document.getElementById('bloqueBuscarCliente').style.display = 'none';
+    document.getElementById('bloqueClienteSeleccionado').style.display = 'block';
+    document.getElementById('nombreClienteSel').textContent = `${cliente.nombres} ${cliente.apellidos}`;
+    document.getElementById('resultadosCliente').innerHTML = '';
+    document.getElementById('buscarCliente').value = '';
+
+    const bloqueMascota = document.getElementById('bloqueMascota');
+    const selMascota = document.getElementById('p_mascota_id');
+    selMascota.innerHTML = '<option value="">Cargando…</option>';
+    bloqueMascota.style.display = 'block';
+    try {
+      const mascotas = await apiFetch(`/clientes/${cliente.id}/mascotas`);
+      selMascota.innerHTML = mascotas.length
+        ? mascotas.map(m => `<option value="${m.id}">${m.nombre} (${m.especie || 'mascota'})</option>`).join('')
+        : '<option value="">Este cliente no tiene mascotas registradas</option>';
+    } catch (err) {
+      selMascota.innerHTML = '<option value="">Error cargando mascotas</option>';
+    }
+  }
+  function quitarCliente() {
+    clienteSeleccionado = null;
+    document.getElementById('bloqueBuscarCliente').style.display = 'block';
+    document.getElementById('bloqueClienteSeleccionado').style.display = 'none';
+    document.getElementById('bloqueMascota').style.display = 'none';
+    document.getElementById('buscarCliente').value = '';
+    document.getElementById('resultadosCliente').innerHTML = '';
+  }
+
+  // --- Ítems dinámicos ---
+  function agregarItem() {
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+      <input type="text" placeholder="Descripción" class="it-desc" required oninput="calcularTotales()">
+      <input type="number" placeholder="1" min="1" step="1" class="it-cant" value="1" oninput="calcularTotales()">
+      <input type="number" placeholder="0.00" min="0" step="0.01" class="it-precio" value="0" oninput="calcularTotales()">
+      <input type="number" placeholder="0.00" min="0" step="0.01" class="it-desc-monto" value="0" oninput="calcularTotales()">
+      <button type="button" class="item-remove" onclick="this.parentElement.remove(); calcularTotales();">✕</button>`;
+    document.getElementById('itemsProforma').appendChild(div);
+  }
+  function calcularTotales() {
+    let subtotal = 0;
+    document.querySelectorAll('#itemsProforma .item-row').forEach(row => {
+      const cant = Number(row.querySelector('.it-cant').value) || 0;
+      const precio = Number(row.querySelector('.it-precio').value) || 0;
+      const desc = Number(row.querySelector('.it-desc-monto').value) || 0;
+      subtotal += cant * precio - desc;
+    });
+    const iva = subtotal * 0.15;
+    document.getElementById('totalSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('totalIva').textContent = `$${iva.toFixed(2)}`;
+    document.getElementById('totalTotal').textContent = `$${(subtotal + iva).toFixed(2)}`;
+  }
+
+  document.getElementById('formProforma').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('errorProforma');
+    const btn = document.getElementById('btnGuardarProforma');
+    errorBox.classList.remove('show');
+
+    if (!clienteSeleccionado) { errorBox.textContent = 'Selecciona un cliente.'; errorBox.classList.add('show'); return; }
+    const mascotaId = document.getElementById('p_mascota_id').value;
+    if (!mascotaId) { errorBox.textContent = 'Selecciona una mascota.'; errorBox.classList.add('show'); return; }
+
+    const items = Array.from(document.querySelectorAll('#itemsProforma .item-row')).map(row => ({
+      descripcion: row.querySelector('.it-desc').value.trim(),
+      cantidad: Number(row.querySelector('.it-cant').value) || 1,
+      precio_unitario: Number(row.querySelector('.it-precio').value) || 0,
+      descuento: Number(row.querySelector('.it-desc-monto').value) || 0,
+    })).filter(it => it.descripcion);
+
+    if (!items.length) { errorBox.textContent = 'Agrega al menos un ítem con descripción.'; errorBox.classList.add('show'); return; }
+
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      await apiFetch('/proformas', {
+        method: 'POST',
+        body: JSON.stringify({
+          cliente_id: clienteSeleccionado.id,
+          mascota_id: Number(mascotaId),
+          empleado_id: document.getElementById('p_empleado_id').value || null,
+          fecha_validez: document.getElementById('p_fecha_validez').value || null,
+          observaciones: document.getElementById('p_observaciones').value.trim() || null,
+          items,
+        }),
+      });
+      cerrarModal('overlayProforma');
+      cargarProformas();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear proforma';
+    }
+  });
+
+  // --- Detalle / aprobar / rechazar / facturar ---
+  async function verDetalle(id) {
+    document.getElementById('errorDetalle').classList.remove('show');
+    document.getElementById('detTitulo').textContent = 'Cargando…';
+    document.getElementById('overlayDetalle').classList.add('open');
+    try {
+      const p = await apiFetch(`/proformas/${id}`);
+      document.getElementById('detTitulo').textContent = `Proforma #${p.id}`;
+      document.getElementById('detSub').textContent = `${new Date(p.fecha_emision).toLocaleDateString('es-EC')} · ${ETIQUETAS_ESTADO_P[p.estado] || p.estado}`;
+      document.getElementById('tablaDetalleItems').innerHTML = p.detalle.map(d => `
+        <tr><td>${d.descripcion}</td><td style="text-align:center;">${d.cantidad}</td><td class="mono">$${Number(d.precio_unitario).toFixed(2)}</td><td class="mono">$${Number(d.subtotal).toFixed(2)}</td></tr>`).join('');
+      document.getElementById('detTotales').innerHTML = `<span>Subtotal: <b>$${Number(p.subtotal_12).toFixed(2)}</b></span><span>IVA: <b>$${Number(p.iva_valor).toFixed(2)}</b></span><span>Total: <b>$${Number(p.total).toFixed(2)}</b></span>`;
+
+      const acciones = document.getElementById('detAcciones');
+      let botones = '<button type="button" class="btn-ghost" onclick="cerrarModal(\'overlayDetalle\')">Cerrar</button>';
+      if (p.estado === 'pendiente') {
+        botones += `<button type="button" class="btn-ghost btn-danger" onclick="cambiarEstadoProforma(${p.id}, 'rechazar')">Rechazar</button>`;
+        botones += `<button type="button" class="btn-primary" onclick="cambiarEstadoProforma(${p.id}, 'aprobar')">Aprobar</button>`;
+      } else if (p.estado === 'aprobada') {
+        botones += `<button type="button" class="btn-primary" onclick="facturarProforma(${p.id})">Convertir en factura</button>`;
+      }
+      acciones.innerHTML = botones;
+    } catch (err) {
+      document.getElementById('detTitulo').textContent = 'Error';
+      document.getElementById('detSub').textContent = err.message;
+    }
+  }
+
+  async function cambiarEstadoProforma(id, accion) {
+    try {
+      await apiFetch(`/proformas/${id}/${accion}`, { method: 'PATCH' });
+      cerrarModal('overlayDetalle');
+      cargarProformas();
+    } catch (err) {
+      document.getElementById('errorDetalle').textContent = err.message;
+      document.getElementById('errorDetalle').classList.add('show');
+    }
+  }
+
+  async function facturarProforma(id) {
+    const establecimiento = prompt('Código de establecimiento (ej. 001):', '001');
+    if (establecimiento === null) return;
+    const puntoEmision = prompt('Punto de emisión (ej. 001):', '001');
+    if (puntoEmision === null) return;
+    const secuencial = prompt('Secuencial de la factura (ej. 000000123):');
+    if (!secuencial) return;
+
+    let formasPago = [];
+    try { formasPago = await apiFetch('/formas-pago'); } catch (err) { formasPago = []; }
+    const formaPagoId = formasPago[0]?.id || null;
+
+    try {
+      await apiFetch(`/proformas/${id}/facturar`, {
+        method: 'POST',
+        body: JSON.stringify({ establecimiento, punto_emision: puntoEmision, secuencial, forma_pago_id: formaPagoId, empleado_id: usuario.empleadoId || null }),
+      });
+      cerrarModal('overlayDetalle');
+      cargarProformas();
+      alert('Proforma facturada. Puedes ver la factura en el módulo de Facturación.');
+    } catch (err) {
+      document.getElementById('errorDetalle').textContent = err.message;
+      document.getElementById('errorDetalle').classList.add('show');
+    }
+  }
+
+  cargarProformas();
+</script>
+</body>
+</html>
