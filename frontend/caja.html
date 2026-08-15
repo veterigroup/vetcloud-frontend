@@ -361,7 +361,7 @@
   async function cargarFondos() {
     const tbody = document.getElementById('tablaFondos');
     try {
-      const fondos = await apiFetch('/caja-chica/fondos');
+      const fondos = await apiFetch('/caja/caja-chica/fondos');
       tbody.innerHTML = fondos.length
         ? fondos.map(f => `<tr onclick="abrirModalMovimientos(${f.id}, '${f.nombre.replace(/'/g, "\\'")}')">
             <td style="font-weight:500;">${f.nombre}</td>
@@ -390,7 +390,7 @@
     errorBox.classList.remove('show');
     btn.disabled = true; btn.textContent = 'Creando…';
     try {
-      await apiFetch('/caja-chica/fondos', {
+      await apiFetch('/caja/caja-chica/fondos', {
         method: 'POST',
         body: JSON.stringify({
           nombre: document.getElementById('f_nombre').value.trim(),
@@ -430,7 +430,7 @@
     const tbody = document.getElementById('tablaMovimientos');
     tbody.innerHTML = '<tr><td class="empty-state">Cargando…</td></tr>';
     try {
-      const movs = await apiFetch(`/caja-chica/${fondoActualId}/movimientos`);
+      const movs = await apiFetch(`/caja/caja-chica/${fondoActualId}/movimientos`);
       tbody.innerHTML = movs.length
         ? movs.map(m => `<tr>
             <td class="mono" style="color:var(--ink-faint);">${new Date(m.fecha).toLocaleDateString('es-EC')}</td>
@@ -454,7 +454,7 @@
     const btn = document.getElementById('btnMovimiento');
     btn.disabled = true; btn.textContent = 'Guardando…';
     try {
-      await apiFetch(`/caja-chica/${fondoActualId}/movimientos`, {
+      await apiFetch(`/caja/caja-chica/${fondoActualId}/movimientos`, {
         method: 'POST',
         body: JSON.stringify({
           tipo_movimiento: document.getElementById('mv_tipo').value,
